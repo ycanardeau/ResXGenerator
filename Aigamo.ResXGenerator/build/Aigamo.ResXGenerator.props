@@ -1,0 +1,36 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <AdditionalFileItemNames>$(AdditionalFileItemNames);EmbeddedResource</AdditionalFileItemNames>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="MSBuildProjectFullPath" />
+    <CompilerVisibleProperty Include="MSBuildProjectName" />
+    <CompilerVisibleProperty Include="RootNamespace" />
+    <CompilerVisibleProperty Include="CustomToolNamespace" />
+    <CompilerVisibleProperty Include="ResXGenerator_PublicClass" />
+    <CompilerVisibleProperty Include="ResXGenerator_NullForgivingOperators" />
+    <CompilerVisibleProperty Include="ResXGenerator_StaticClass" />
+    <CompilerVisibleProperty Include="ResXGenerator_StaticMembers" />
+    <CompilerVisibleProperty Include="ResXGenerator_PartialClass" />
+    <CompilerVisibleProperty Include="ResXGenerator_ClassNamePostfix" />
+    <CompilerVisibleProperty Include="ResXGenerator_InnerClassVisibility" />
+    <CompilerVisibleProperty Include="ResXGenerator_InnerClassName" />
+    <CompilerVisibleProperty Include="ResXGenerator_InnerClassInstanceName" />
+    <CompilerVisibleProperty Include="ResXGenerator_UseVocaDbResManager" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="Link" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="TargetPath" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="CustomToolNamespace" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="ClassNamePostfix" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="PublicClass" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="StaticClass" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="StaticMembers" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="PartialClass" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="InnerClassVisibility" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="InnerClassName" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="InnerClassInstanceName" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="UseVocaDbResManager" />
+  </ItemGroup>
+
+</Project>

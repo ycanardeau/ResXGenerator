@@ -1,0 +1,8 @@
+{
+	"profiles": {
+		"Debug": {
+			"commandName": "DebugRoslynComponent",
+			"targetProject": "..\\Aigamo.ResXGenerator.Tests\\Aigamo.ResXGenerator.Tests.csproj"
+		}
+	}
+}

@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Debug": {
-      "commandName": "DebugRoslynComponent",
-      "targetProject": "..\\VocaDb.ResXFileCodeGenerator.Tests\\VocaDb.ResXFileCodeGenerator.Tests.csproj"
-    }
-  }
-}

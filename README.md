@@ -1,12 +1,15 @@
-# ResXFileCodeGenerator
-ResX Designer Source Generator. Generates strongly-typed resource classes for looking up localized strings.
+# ResXGenerator
+
+ResXGenerator is a C# source generator to generate strongly-typed resource classes for looking up localized strings.
+
+NOTE: This is an independent fork of VocaDb/ResXFileCodeGenerator.
 
 ## Usage
 
-Install the `VocaDb.ResXFileCodeGenerator` package:
+Install the `Aigamo.ResXGenerator` package:
 
 ```psl
-dotnet add package VocaDb.ResXFileCodeGenerator
+dotnet add package Aigamo.ResXGenerator
 ```
 
 Generated source from [ActivityEntrySortRuleNames.resx](https://github.com/VocaDB/vocadb/blob/6ac18dd2981f82100c8c99566537e4916920219e/VocaDbWeb.Resources/App_GlobalResources/ActivityEntrySortRuleNames.resx):
@@ -47,23 +50,23 @@ namespace Resources
 
 ## New in version 3
 
-* The generator now utilizes the IIncrementalGenerator API to instantly update the generated code, thus giving you instant intellisense.
+-   The generator now utilizes the IIncrementalGenerator API to instantly update the generated code, thus giving you instant intellisense.
 
-* Added error handling for multiple members of same name, and members that have same name as class. These are clickable in visual studio to lead you to the source of the error, unlike before where they resulted in broken builds and you had to figure out why.
+-   Added error handling for multiple members of same name, and members that have same name as class. These are clickable in visual studio to lead you to the source of the error, unlike before where they resulted in broken builds and you had to figure out why.
 
-* Namespace naming fixed for resx files in the top level folder.
+-   Namespace naming fixed for resx files in the top level folder.
 
-* Resx files can now be named with multiple extensions, e.g. myresources.cshtml.resx and will result in class being called myresources.
+-   Resx files can now be named with multiple extensions, e.g. myresources.cshtml.resx and will result in class being called myresources.
 
-* Added the ability to generate inner classes, partial outer classes and non-static members. Very useful if you want to ensure that only a particular class can use those resources instead of being spread around the codebase.
+-   Added the ability to generate inner classes, partial outer classes and non-static members. Very useful if you want to ensure that only a particular class can use those resources instead of being spread around the codebase.
 
-* Use same 'Link' setting as msbuild uses to determine embedded file name.
+-   Use same 'Link' setting as msbuild uses to determine embedded file name.
 
-* Can set a class postfix name
+-   Can set a class postfix name
 
 ## New in version 3.1
 
-* The generator can now generate code to lookup translations instead of using the 20 year old System.Resources.ResourceManager
+-   The generator can now generate code to lookup translations instead of using the 20 year old System.Resources.ResourceManager
 
 ## Options
 
@@ -71,7 +74,7 @@ namespace Resources
 
 Use cases: https://github.com/VocaDB/ResXFileCodeGenerator/issues/2.
 
-Since version 2.0.0, VocaDB.ResXFileCodeGenerator generates internal classes by default. You can change this behavior by setting `PublicClass` to `true`.
+Since version 2.0.0, ResXGenerator generates internal classes by default. You can change this behavior by setting `PublicClass` to `true`.
 
 ```xml
 <ItemGroup>
@@ -80,7 +83,9 @@ Since version 2.0.0, VocaDB.ResXFileCodeGenerator generates internal classes by 
   </EmbeddedResource>
 </ItemGroup>
 ```
+
 or
+
 ```xml
 <ItemGroup>
   <EmbeddedResource Update="Resources\ArtistCategoriesNames.resx" PublicClass="true" />
@@ -88,9 +93,10 @@ or
 ```
 
 If you want to apply this globally, use
+
 ```xml
 <PropertyGroup>
-  <ResXFileCodeGenerator_PublicClass>true</ResXFileCodeGenerator_PublicClass>
+  <ResXGenerator_PublicClass>true</ResXGenerator_PublicClass>
 </PropertyGroup>
 ```
 
@@ -100,15 +106,18 @@ Use cases: https://github.com/VocaDB/ResXFileCodeGenerator/issues/1.
 
 ```xml
 <PropertyGroup>
-  <ResXFileCodeGenerator_NullForgivingOperators>true</ResXFileCodeGenerator_NullForgivingOperators>
+  <ResXGenerator_NullForgivingOperators>true</ResXGenerator_NullForgivingOperators>
 </PropertyGroup>
 ```
 
-By setting `ResXFileCodeGenerator_NullForgivingOperators` to `true`, VocaDB.ResXFileCodeGenerator generates
+By setting `ResXGenerator_NullForgivingOperators` to `true`, ResXGenerator generates
+
 ```cs
 public static string CreateDate => ResourceManager.GetString(nameof(CreateDate), CultureInfo)!;
 ```
+
 instead of
+
 ```cs
 public static string? CreateDate => ResourceManager.GetString(nameof(CreateDate), CultureInfo);
 ```
@@ -129,7 +138,7 @@ or globally
 
 ```xml
 <PropertyGroup>
-  <ResXFileCodeGenerator_StaticClass>false</ResXFileCodeGenerator_StaticClass>
+  <ResXGenerator_StaticClass>false</ResXGenerator_StaticClass>
 </PropertyGroup>
 ```
 
@@ -151,7 +160,7 @@ or globally
 
 ```xml
 <PropertyGroup>
-  <ResXFileCodeGenerator_PartialClass>true</ResXFileCodeGenerator_PartialClass>
+  <ResXGenerator_PartialClass>true</ResXGenerator_PartialClass>
 </PropertyGroup>
 ```
 
@@ -171,7 +180,7 @@ or globally
 
 ```xml
 <PropertyGroup>
-  <ResXFileCodeGenerator_StaticMembers>false</ResXFileCodeGenerator_StaticMembers>
+  <ResXGenerator_StaticMembers>false</ResXGenerator_StaticMembers>
 </PropertyGroup>
 ```
 
@@ -198,12 +207,11 @@ This example configuration allows you to use Resources.MyResource in your model,
 </ItemGroup>
 ```
 
-
 or just the postfix globally
 
 ```xml
 <PropertyGroup>
-  <ResXFileCodeGenerator_ClassNamePostfix>Model</ResXFileCodeGenerator_ClassNamePostfix>
+  <ResXGenerator_ClassNamePostfix>Model</ResXGenerator_ClassNamePostfix>
 </PropertyGroup>
 ```
 
@@ -232,12 +240,12 @@ or globally
 
 ```xml
 <PropertyGroup>
-  <ResXFileCodeGenerator_InnerClassName>MyResources</ResXFileCodeGenerator_InnerClassName>
-  <ResXFileCodeGenerator_InnerClassVisibility>private</ResXFileCodeGenerator_InnerClassVisibility>
-  <ResXFileCodeGenerator_InnerClassInstanceName>EveryoneLikeMyNaming</InnerClassInstanceName>
-  <ResXFileCodeGenerator_StaticMembers>false</ResXFileCodeGenerator_StaticMembers>
-  <ResXFileCodeGenerator_StaticClass>false</ResXFileCodeGenerator_StaticClass>
-  <ResXFileCodeGenerator_PartialClass>true</ResXFileCodeGenerator_PartialClass>
+  <ResXGenerator_InnerClassName>MyResources</ResXGenerator_InnerClassName>
+  <ResXGenerator_InnerClassVisibility>private</ResXGenerator_InnerClassVisibility>
+  <ResXGenerator_InnerClassInstanceName>EveryoneLikeMyNaming</InnerClassInstanceName>
+  <ResXGenerator_StaticMembers>false</ResXGenerator_StaticMembers>
+  <ResXGenerator_StaticClass>false</ResXGenerator_StaticClass>
+  <ResXGenerator_PartialClass>true</ResXGenerator_PartialClass>
 </PropertyGroup>
 ```
 
@@ -286,11 +294,11 @@ namespace Resources
 
 By default inner classes are not generated, unless this setting is one of the following:
 
- * Public
- * Internal
- * Private
- * Protected
- * SameAsOuter
+-   Public
+-   Internal
+-   Private
+-   Protected
+-   SameAsOuter
 
 Case is ignored, so you could use "private".
 
@@ -308,7 +316,7 @@ or globally
 
 ```xml
 <PropertyGroup>
-  <ResXFileCodeGenerator_InnerClassVisibility>private</ResXFileCodeGenerator_InnerClassVisibility>
+  <ResXGenerator_InnerClassVisibility>private</ResXGenerator_InnerClassVisibility>
 </PropertyGroup>
 ```
 
@@ -328,10 +336,9 @@ or globally
 
 ```xml
 <PropertyGroup>
-  <ResXFileCodeGenerator_InnerClassName>MyResources</ResXFileCodeGenerator_InnerClassName>
+  <ResXGenerator_InnerClassName>MyResources</ResXGenerator_InnerClassName>
 </PropertyGroup>
 ```
-
 
 ### Inner Class instance name (per file or globally)
 
@@ -349,7 +356,7 @@ or globally
 
 ```xml
 <PropertyGroup>
-  <ResXFileCodeGenerator_InnerClassInstanceName>EveryoneLikeMyNaming</ResXFileCodeGenerator_InnerClassInstanceName>
+  <ResXGenerator_InnerClassInstanceName>EveryoneLikeMyNaming</ResXGenerator_InnerClassInstanceName>
 </PropertyGroup>
 ```
 
@@ -361,35 +368,35 @@ By default the ancient `System.Resources.ResourceManager` is used.
 
 Benefits of using `System.Resources.ResourceManager`:
 
-* Supports custom `CultureInfo`
-* Languages are only loaded the first time a language is referenced
-* Only use memory for the languages used
-* Can ship satellite dlls seperately
+-   Supports custom `CultureInfo`
+-   Languages are only loaded the first time a language is referenced
+-   Only use memory for the languages used
+-   Can ship satellite dlls seperately
 
 Disadvantages of using `System.Resources.ResourceManager`
 
-* The satellite dlls are always lazy loaded, so cold start penalty is high
-* Satellite dlls requires that you can scan the dir for which files are available, which can cause issues in some project types
-* Loading a satellite dll takes way more memory than just loading the respective strings
-* Build time for .resources -> satellite dll can be quite slow (~150msec per file)
-* Linker optimization doesn't work, since it cannot know which resources are referenced
+-   The satellite dlls are always lazy loaded, so cold start penalty is high
+-   Satellite dlls requires that you can scan the dir for which files are available, which can cause issues in some project types
+-   Loading a satellite dll takes way more memory than just loading the respective strings
+-   Build time for .resources -> satellite dll can be quite slow (~150msec per file)
+-   Linker optimization doesn't work, since it cannot know which resources are referenced
 
 Benefits of using `VocaDB` code generation:
 
-* All languages are placed in the main dll, no more satellite dlls
-* Lookup speed is ~600% faster (5ns vs 33ns)
-* Zero allocations
-* Very small code footprint (about 10 bytes per language, instead of including the entire `System.Resources`)
-* Very fast build time
-* Because all code is referencing the strings directly, the linker can see which strings are actually used and which are not.
-* No cold start penalty
-* Smaller combined size of dll (up to 50%, since it doesn't need to store the keys for every single language)
+-   All languages are placed in the main dll, no more satellite dlls
+-   Lookup speed is ~600% faster (5ns vs 33ns)
+-   Zero allocations
+-   Very small code footprint (about 10 bytes per language, instead of including the entire `System.Resources`)
+-   Very fast build time
+-   Because all code is referencing the strings directly, the linker can see which strings are actually used and which are not.
+-   No cold start penalty
+-   Smaller combined size of dll (up to 50%, since it doesn't need to store the keys for every single language)
 
 Disadvantages of using `VocaDB` code generation
 
-* Since `CultureInfo` are pre-computed, custom `CultureInfo` are not supported (or rather, they always return the default language)
-* Cannot lookup "all" keys (unless using reflection)
-* Main dll size increased since it contains all language strings (sometimes, the compiler can pack code strings much better than resource strings and it doesn't need to store the keys)
+-   Since `CultureInfo` are pre-computed, custom `CultureInfo` are not supported (or rather, they always return the default language)
+-   Cannot lookup "all" keys (unless using reflection)
+-   Main dll size increased since it contains all language strings (sometimes, the compiler can pack code strings much better than resource strings and it doesn't need to store the keys)
 
 Notice, it is required to set `GenerateResource` to false for all resx files to prevent the built-in resgen.exe from running.
 
@@ -406,7 +413,7 @@ or globally
 
 ```xml
 <PropertyGroup>
-  <ResXFileCodeGenerator_UseVocaDbResManager>true</ResXFileCodeGenerator_UseVocaDbResManager>
+  <ResXGenerator_UseVocaDbResManager>true</ResXGenerator_UseVocaDbResManager>
 </PropertyGroup>
 <ItemGroup>
     <EmbeddedResource Update="@(EmbeddedResource)">
@@ -421,10 +428,9 @@ If you get build error MSB3030, add this to your csproj to prevent it from tryin
 <Target Name="PreventMSB3030" DependsOnTargets="ComputeIntermediateSatelliteAssemblies" BeforeTargets="GenerateSatelliteAssemblies" >
   <ItemGroup>
     <IntermediateSatelliteAssembliesWithTargetPath Remove="@(IntermediateSatelliteAssembliesWithTargetPath)"></IntermediateSatelliteAssembliesWithTargetPath>
-  </ItemGroup>   
+  </ItemGroup>
 </Target>
 ```
-
 
 ## Resource file namespaces
 
@@ -471,10 +477,11 @@ It is also possible to set the namespace using the `CustomToolNamespace` setting
 ```
 
 ## References
-- [Introducing C# Source Generators | .NET Blog](https://devblogs.microsoft.com/dotnet/introducing-c-source-generators/)
-- [microsoft/CsWin32: A source generator to add a user-defined set of Win32 P/Invoke methods and supporting types to a C# project.](https://github.com/microsoft/cswin32)
-- [kenkendk/mdresxfilecodegenerator: Resx Designer Generator](https://github.com/kenkendk/mdresxfilecodegenerator)
-- [dotnet/ResXResourceManager: Manage localization of all ResX-Based resources in one central place.](https://github.com/dotnet/ResXResourceManager)
-- [roslyn/source-generators.cookbook.md at master · dotnet/roslyn](https://github.com/dotnet/roslyn/blob/master/docs/features/source-generators.cookbook.md)
-- [roslyn/Using Additional Files.md at master · dotnet/roslyn](https://github.com/dotnet/roslyn/blob/master/docs/analyzers/Using%20Additional%20Files.md)
-- [ufcpp - YouTube](https://www.youtube.com/channel/UCY-z_9mau6X-Vr4gk2aWtMQ)
+
+-   [Introducing C# Source Generators | .NET Blog](https://devblogs.microsoft.com/dotnet/introducing-c-source-generators/)
+-   [microsoft/CsWin32: A source generator to add a user-defined set of Win32 P/Invoke methods and supporting types to a C# project.](https://github.com/microsoft/cswin32)
+-   [kenkendk/mdresxfilecodegenerator: Resx Designer Generator](https://github.com/kenkendk/mdresxfilecodegenerator)
+-   [dotnet/ResXResourceManager: Manage localization of all ResX-Based resources in one central place.](https://github.com/dotnet/ResXResourceManager)
+-   [roslyn/source-generators.cookbook.md at master · dotnet/roslyn](https://github.com/dotnet/roslyn/blob/master/docs/features/source-generators.cookbook.md)
+-   [roslyn/Using Additional Files.md at master · dotnet/roslyn](https://github.com/dotnet/roslyn/blob/master/docs/analyzers/Using%20Additional%20Files.md)
+-   [ufcpp - YouTube](https://www.youtube.com/channel/UCY-z_9mau6X-Vr4gk2aWtMQ)
