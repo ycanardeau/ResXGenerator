@@ -381,7 +381,7 @@ Disadvantages of using `System.Resources.ResourceManager`
 -   Build time for .resources -> satellite dll can be quite slow (~150msec per file)
 -   Linker optimization doesn't work, since it cannot know which resources are referenced
 
-Benefits of using `VocaDB` code generation:
+Benefits of using `GenerateCode` code generation:
 
 -   All languages are placed in the main dll, no more satellite dlls
 -   Lookup speed is ~600% faster (5ns vs 33ns)
@@ -392,7 +392,7 @@ Benefits of using `VocaDB` code generation:
 -   No cold start penalty
 -   Smaller combined size of dll (up to 50%, since it doesn't need to store the keys for every single language)
 
-Disadvantages of using `VocaDB` code generation
+Disadvantages of using `GenerateCode` code generation
 
 -   Since `CultureInfo` are pre-computed, custom `CultureInfo` are not supported (or rather, they always return the default language)
 -   Cannot lookup "all" keys (unless using reflection)
