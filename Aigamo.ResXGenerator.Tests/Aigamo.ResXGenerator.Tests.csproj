@@ -33,7 +33,7 @@
 		  <DependentUpon>$([System.IO.Path]::GetFileNameWithoutExtension('%(FileName)')).resx</DependentUpon>
 	  </EmbeddedResource>
     <EmbeddedResource Update="IntegrationTests\Test2.resx">
-	    <UseVocaDbResManager>true</UseVocaDbResManager>
+	    <GenerateCode>true</GenerateCode>
     </EmbeddedResource>
   </ItemGroup>
 

@@ -260,7 +260,7 @@ using static Aigamo.ResXGenerator.Helpers;
 					}
 				),
 				PublicClass = publicClass,
-				UseVocaDbResManager = true,
+				GenerateCode = true,
 				NullForgivingOperators = nullForgivingOperators,
 				StaticClass = staticClass,
 				PartialClass = partial,

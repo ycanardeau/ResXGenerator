@@ -403,7 +403,7 @@ Notice, it is required to set `GenerateResource` to false for all resx files to 
 ```xml
 <ItemGroup>
     <EmbeddedResource Update="**/*.resx">
-        <UseVocaDbResManager>true</UseVocaDbResManager>
+        <GenerateCode>true</GenerateCode>
         <GenerateResource>false</GenerateResource>
     </EmbeddedResource>
 </ItemGroup>
@@ -413,7 +413,7 @@ or globally
 
 ```xml
 <PropertyGroup>
-  <ResXGenerator_UseVocaDbResManager>true</ResXGenerator_UseVocaDbResManager>
+  <ResXGenerator_GenerateCode>true</ResXGenerator_GenerateCode>
 </PropertyGroup>
 <ItemGroup>
     <EmbeddedResource Update="@(EmbeddedResource)">

@@ -57,7 +57,7 @@ public class SettingsTests
 					ResXGenerator_NullForgivingOperators = "true",
 					ResXGenerator_StaticClass = "false",
 					ResXGenerator_StaticMembers = "false",
-					ResXGenerator_UseVocaDbResManager = "true",
+					ResXGenerator_GenerateCode = "true",
 					ResXGenerator_PublicClass = "true",
 					ResXGenerator_PartialClass = "true",
 				},
@@ -74,7 +74,7 @@ public class SettingsTests
 		globalOptions.InnerClassVisibility.Should().Be(InnerClassVisibility.Public);
 		globalOptions.NullForgivingOperators.Should().Be(true);
 		globalOptions.StaticClass.Should().Be(false);
-		globalOptions.UseVocaDbResManager.Should().Be(true);
+		globalOptions.GenerateCode.Should().Be(true);
 		globalOptions.StaticMembers.Should().Be(false);
 		globalOptions.PublicClass.Should().Be(true);
 		globalOptions.PartialClass.Should().Be(true);
@@ -103,7 +103,7 @@ public class SettingsTests
 		fileOptions.StaticMembers.Should().Be(true);
 		fileOptions.PublicClass.Should().Be(false);
 		fileOptions.PartialClass.Should().Be(false);
-		fileOptions.UseVocaDbResManager.Should().Be(false);
+		fileOptions.GenerateCode.Should().Be(false);
 		fileOptions.LocalNamespace.Should().Be("namespace1");
 		fileOptions.CustomToolNamespace.Should().BeNullOrEmpty();
 		fileOptions.GroupedFile.MainFile.File.Path.Should().Be("Path1.resx");
@@ -160,7 +160,7 @@ public class SettingsTests
 		fileOptions.StaticMembers.Should().Be(true);
 		fileOptions.PublicClass.Should().Be(false);
 		fileOptions.PartialClass.Should().Be(false);
-		fileOptions.UseVocaDbResManager.Should().Be(false);
+		fileOptions.GenerateCode.Should().Be(false);
 		fileOptions.LocalNamespace.Should().Be(expectedLocalNamespace);
 		fileOptions.CustomToolNamespace.Should().BeNullOrEmpty();
 		fileOptions.GroupedFile.MainFile.File.Path.Should().Be(mainFile);
@@ -209,7 +209,7 @@ public class SettingsTests
 					StaticMembers = "false",
 					PublicClass = "true",
 					PartialClass = "true",
-					UseVocaDbResManager = "true",
+					GenerateCode = "true",
 				}
 			),
 			globalOptions: s_globalOptions
@@ -223,7 +223,7 @@ public class SettingsTests
 		fileOptions.PublicClass.Should().Be(true);
 		fileOptions.PartialClass.Should().Be(true);
 		fileOptions.IsValid.Should().Be(true);
-		fileOptions.UseVocaDbResManager.Should().Be(true);
+		fileOptions.GenerateCode.Should().Be(true);
 		fileOptions.LocalNamespace.Should().Be("namespace1");
 		fileOptions.CustomToolNamespace.Should().Be("ns1");
 		fileOptions.GroupedFile.MainFile.File.Path.Should().Be("Path1.resx");
@@ -274,7 +274,7 @@ public class SettingsTests
 		fileOptions.PublicClass.Should().Be(true);
 		fileOptions.PartialClass.Should().Be(true);
 		fileOptions.IsValid.Should().Be(true);
-		fileOptions.UseVocaDbResManager.Should().Be(false);
+		fileOptions.GenerateCode.Should().Be(false);
 		fileOptions.LocalNamespace.Should().Be("namespace1");
 		fileOptions.CustomToolNamespace.Should().BeNullOrEmpty();
 		fileOptions.GroupedFile.MainFile.File.Path.Should().Be("Path1.resx");
@@ -298,7 +298,7 @@ public class SettingsTests
 		public string? ResXGenerator_InnerClassVisibility { get; init; }
 		public string? ResXGenerator_InnerClassName { get; init; }
 		public string? ResXGenerator_InnerClassInstanceName { get; init; }
-		public string? ResXGenerator_UseVocaDbResManager { get; init; }
+		public string? ResXGenerator_GenerateCode { get; init; }
 		public string? CustomToolNamespace { get; init; }
 		public string? TargetPath { get; init; }
 		public string? ClassNamePostfix { get; init; }
@@ -310,7 +310,7 @@ public class SettingsTests
 		public string? InnerClassVisibility { get; init; }
 		public string? InnerClassName { get; init; }
 		public string? InnerClassInstanceName { get; init; }
-		public string? UseVocaDbResManager { get; init; }
+		public string? GenerateCode { get; init; }
 
 		// ReSharper restore InconsistentNaming
 
@@ -322,7 +322,7 @@ public class SettingsTests
 					"build_property.MSBuildProjectFullPath" => MSBuildProjectFullPath,
 					"build_property.MSBuildProjectName" => MSBuildProjectName,
 					"build_property.RootNamespace" => RootNamespace,
-					"build_property.ResXGenerator_UseVocaDbResManager" => ResXGenerator_UseVocaDbResManager,
+					"build_property.ResXGenerator_GenerateCode" => ResXGenerator_GenerateCode,
 					"build_property.ResXGenerator_ClassNamePostfix" => ResXGenerator_ClassNamePostfix,
 					"build_property.ResXGenerator_PublicClass" => ResXGenerator_PublicClass,
 					"build_property.ResXGenerator_NullForgivingOperators" => ResXGenerator_NullForgivingOperators,
@@ -343,7 +343,7 @@ public class SettingsTests
 					"build_metadata.EmbeddedResource.InnerClassVisibility" => InnerClassVisibility,
 					"build_metadata.EmbeddedResource.InnerClassName" => InnerClassName,
 					"build_metadata.EmbeddedResource.InnerClassInstanceName" => InnerClassInstanceName,
-					"build_metadata.EmbeddedResource.UseVocaDbResManager" => UseVocaDbResManager,
+					"build_metadata.EmbeddedResource.GenerateCode" => GenerateCode,
 					_ => null
 				};
 

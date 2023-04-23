@@ -16,7 +16,7 @@ public readonly record struct FileOptions
 	public string ClassName { get; init; }
 	public string? CustomToolNamespace { get; init; }
 	public string LocalNamespace { get; init; }
-	public bool UseVocaDbResManager { get; init; }
+	public bool GenerateCode { get; init; }
 	public string EmbeddedFilename { get; init; }
 	public bool IsValid { get; init; }
 
@@ -121,13 +121,13 @@ public readonly record struct FileOptions
 			InnerClassInstanceName = innerClassInstanceNameSwitch;
 		}
 
-		UseVocaDbResManager = globalOptions.UseVocaDbResManager;
+		GenerateCode = globalOptions.GenerateCode;
 		if (
-			options.TryGetValue("build_metadata.EmbeddedResource.UseVocaDbResManager", out var genCodeSwitch) &&
+			options.TryGetValue("build_metadata.EmbeddedResource.GenerateCode", out var genCodeSwitch) &&
 			genCodeSwitch is { Length: > 0 }
 		)
 		{
-			UseVocaDbResManager = genCodeSwitch.Equals("true", StringComparison.OrdinalIgnoreCase);
+			GenerateCode = genCodeSwitch.Equals("true", StringComparison.OrdinalIgnoreCase);
 		}
 
 		IsValid = globalOptions.IsValid;

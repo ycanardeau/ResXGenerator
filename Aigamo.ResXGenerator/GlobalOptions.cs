@@ -16,7 +16,7 @@ public sealed record GlobalOptions // this must be a record or implement IEquata
 	public bool NullForgivingOperators { get; }
 	public bool PublicClass { get; }
 	public string ClassNamePostfix { get; }
-	public bool UseVocaDbResManager { get; }
+	public bool GenerateCode { get; }
 	public bool IsValid { get; }
 
 	public GlobalOptions(AnalyzerConfigOptions options)
@@ -97,14 +97,14 @@ public sealed record GlobalOptions // this must be a record or implement IEquata
 			InnerClassInstanceName = innerClassInstanceNameSwitch;
 		}
 
-		UseVocaDbResManager = false;
+		GenerateCode = false;
 		if (
-			options.TryGetValue("build_property.ResXGenerator_UseVocaDbResManager", out var genCodeSwitch) &&
+			options.TryGetValue("build_property.ResXGenerator_GenerateCode", out var genCodeSwitch) &&
 			genCodeSwitch is { Length: > 0 } &&
 			genCodeSwitch.Equals("true", StringComparison.OrdinalIgnoreCase)
 		)
 		{
-			UseVocaDbResManager = true;
+			GenerateCode = true;
 		}
 	}
 

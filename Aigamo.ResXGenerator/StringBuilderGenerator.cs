@@ -65,7 +65,7 @@ public sealed partial class StringBuilderGenerator : IGenerator
 		// HACK: netstandard2.0 doesn't support improved interpolated strings?
 		var builder = GetBuilder(options.CustomToolNamespace ?? options.LocalNamespace);
 
-		if (options.UseVocaDbResManager)
+		if (options.GenerateCode)
 			AppendCodeUsings(builder);
 		else
 			AppendResourceManagerUsings(builder);
@@ -120,7 +120,7 @@ public sealed partial class StringBuilderGenerator : IGenerator
 
 		}
 
-		if (options.UseVocaDbResManager)
+		if (options.GenerateCode)
 			GenerateCode(options, content, indent, containerClassName, builder, errorsAndWarnings, cancellationToken);
 		else
 			GenerateResourceManager(options, content, indent, containerClassName, builder, errorsAndWarnings, cancellationToken);
