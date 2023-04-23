@@ -9,7 +9,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/ycanardeau/ResXGenerator</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ycanardeau/ResXGenerator</RepositoryUrl>
-    <Description>ResX Designer Source Generator.</Description>
+    <Description>ResXGenerator is a C# source generator to generate strongly-typed resource classes for looking up localized strings.</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
