@@ -15,7 +15,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <DevelopmentDependency>true</DevelopmentDependency>
-    <Version>4.1.1</Version>
+    <Version>4.1.2</Version>
     <ImplicitUsings>enable</ImplicitUsings>
 	 <IsRoslynComponent>true</IsRoslynComponent>
   </PropertyGroup>
