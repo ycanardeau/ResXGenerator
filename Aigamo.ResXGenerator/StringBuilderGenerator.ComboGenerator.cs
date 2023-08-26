@@ -13,7 +13,7 @@ namespace Aigamo.ResXGenerator
 		static readonly Dictionary<int, List<int>> s_allChildren = new();
 
 		/// <summary>
-		/// Build all cultureinfo children
+		/// Build all CultureInfo children
 		/// </summary>
 		static StringBuilderGenerator()
 		{

@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-namespace Aigamo.ResXGenerator;
+﻿namespace Aigamo.ResXGenerator;
 
 public readonly record struct GroupedAdditionalFile
 {

@@ -165,7 +165,7 @@ public sealed partial class StringBuilderGenerator : IGenerator
 		IXmlLineInfo line,
 		HashSet<string> alreadyAddedMembers,
 		List<Diagnostic> errorsAndWarnings,
-		string containerclassname,
+		string containerClassName,
 		out bool resourceAccessByName
 	)
 	{
@@ -201,7 +201,7 @@ public sealed partial class StringBuilderGenerator : IGenerator
 			return false;
 		}
 
-		if (memberName == containerclassname)
+		if (memberName == containerClassName)
 		{
 			errorsAndWarnings.Add(Diagnostic.Create(
 				descriptor: s_memberSameAsClassWarning,
@@ -234,7 +234,7 @@ public sealed partial class StringBuilderGenerator : IGenerator
 		return true;
 	}
 
-	private static StringBuilder GetBuilder(string withnamespace)
+	private static StringBuilder GetBuilder(string withNamespace)
 	{
 		var builder = new StringBuilder();
 
@@ -242,7 +242,7 @@ public sealed partial class StringBuilderGenerator : IGenerator
 		builder.AppendLineLF("#nullable enable");
 
 		builder.Append("namespace ");
-		builder.Append(withnamespace);
+		builder.Append(withNamespace);
 		builder.AppendLineLF(";");
 
 		return builder;
