@@ -108,6 +108,7 @@ public class SettingsTests
 		fileOptions.CustomToolNamespace.Should().BeNullOrEmpty();
 		fileOptions.GroupedFile.MainFile.File.Path.Should().Be("Path1.resx");
 		fileOptions.ClassName.Should().Be("Path1");
+		fileOptions.SkipFile.Should().Be(false);
 		fileOptions.IsValid.Should().Be(true);
 	}
 
@@ -273,7 +274,6 @@ public class SettingsTests
 		fileOptions.StaticMembers.Should().Be(false);
 		fileOptions.PublicClass.Should().Be(true);
 		fileOptions.PartialClass.Should().Be(true);
-		fileOptions.IsValid.Should().Be(true);
 		fileOptions.GenerateCode.Should().Be(false);
 		fileOptions.LocalNamespace.Should().Be("namespace1");
 		fileOptions.CustomToolNamespace.Should().BeNullOrEmpty();
@@ -281,6 +281,32 @@ public class SettingsTests
 		fileOptions.ClassName.Should().Be("Path1test3");
 		fileOptions.IsValid.Should().Be(true);
 	}
+
+	[Fact]
+	public void FileSettings_CanSkipIndividualFile()
+	{
+		var fileOptions = FileOptions.Select(
+			file: new GroupedAdditionalFile(
+				mainFile: new AdditionalTextWithHash(new AdditionalTextStub("Path1.resx"), Guid.NewGuid()),
+				subFiles: Array.Empty<AdditionalTextWithHash>()
+			),
+			options: new AnalyzerConfigOptionsProviderStub(
+				globalOptions: null!,
+				fileOptions: new AnalyzerConfigOptionsStub
+				{
+					RootNamespace = "namespace1",
+					MSBuildProjectFullPath = "project1.csproj",
+					SkipFile = "true",
+				}
+			),
+			globalOptions: s_globalOptions
+		);
+
+		fileOptions.LocalNamespace.Should().Be("namespace1");
+		fileOptions.SkipFile.Should().Be(true);
+		fileOptions.IsValid.Should().Be(true);
+	}
+
 
 	private class AnalyzerConfigOptionsStub : AnalyzerConfigOptions
 	{
@@ -311,6 +337,7 @@ public class SettingsTests
 		public string? InnerClassName { get; init; }
 		public string? InnerClassInstanceName { get; init; }
 		public string? GenerateCode { get; init; }
+		public string? SkipFile { get; init; }
 
 		// ReSharper restore InconsistentNaming
 
@@ -344,6 +371,7 @@ public class SettingsTests
 					"build_metadata.EmbeddedResource.InnerClassName" => InnerClassName,
 					"build_metadata.EmbeddedResource.InnerClassInstanceName" => InnerClassInstanceName,
 					"build_metadata.EmbeddedResource.GenerateCode" => GenerateCode,
+					"build_metadata.EmbeddedResource.SkipFile" => SkipFile,
 					_ => null
 				};
 
