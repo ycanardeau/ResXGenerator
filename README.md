@@ -124,7 +124,7 @@ public static string? CreateDate => ResourceManager.GetString(nameof(CreateDate)
 
 ### Non-static classes (per file or globally)
 
-To use generated resources with [Microsoft.Extensions.Localization](https://docs.microsoft.com/en-us/dotnet/core/extensions/localization) `IStringLocalizer<T>` and resource manager, the resolved type cannot be a static class. You can disable default behaviour per file by setting the value to `false`.
+To use generated resources with [Microsoft.Extensions.Localization](https://docs.microsoft.com/en-us/dotnet/core/extensions/localization) `IStringLocalizer<T>` and resource manager, the resolved type cannot be a static class. You can disable default behavior per file by setting the value to `false`.
 
 ```xml
 <ItemGroup>
@@ -322,7 +322,7 @@ or globally
 
 ### Inner Class name (per file or globally)
 
-By default the inner class is named "Resources", which can be overriden with this setting:
+By default the inner class is named "Resources", which can be overridden with this setting:
 
 ```xml
 <ItemGroup>
@@ -360,7 +360,7 @@ or globally
 </PropertyGroup>
 ```
 
-For brevity, settings to make everything non-static is obmitted.
+For brevity, settings to make everything non-static is omitted.
 
 ### Generate Code (per file or globally)
 
@@ -371,7 +371,7 @@ Benefits of using `System.Resources.ResourceManager`:
 -   Supports custom `CultureInfo`
 -   Languages are only loaded the first time a language is referenced
 -   Only use memory for the languages used
--   Can ship satellite dlls seperately
+-   Can ship satellite dlls separately
 
 Disadvantages of using `System.Resources.ResourceManager`
 
@@ -466,13 +466,32 @@ You can also use the `TargetPath` to just overwrite the namespace
 </ItemGroup>
 ```
 
-It is also possible to set the namespace using the `CustomToolNamespace` setting. Unlike the `Link` and `TargetPath`, which will prepend the assemblys namespace and includes the filename, the `CustomToolNamespace` is taken verbatim.
+It is also possible to set the namespace using the `CustomToolNamespace` setting. Unlike the `Link` and `TargetPath`, which will prepend the assemblies namespace and includes the filename, the `CustomToolNamespace` is taken verbatim.
 
 ```xml
 <ItemGroup>
   <EmbeddedResource Update="**\*.resx">
     <CustomToolNamespace>MyNamespace.AllMyResourcesAreBelongToYouNamespace</CustomToolNamespace>
   </EmbeddedResource>
+</ItemGroup>
+```
+
+## Excluding resx files
+Individual resx files can also be excluded from being processed by setting the `SkipFile` metadata to true.
+
+```xml
+<ItemGroup>
+    <EmbeddedResource Update="ExcludedFile.resx">
+        <SkipFile>true</SkipFile>
+    </EmbeddedResource>
+</ItemGroup>
+```
+
+Alternatively it can be set with the attribute `SkipFile="true"`.
+
+```xml
+<ItemGroup>
+	<EmbeddedResource Update="ExcludedFile.resx" SkipFile="true" />
 </ItemGroup>
 ```
 
