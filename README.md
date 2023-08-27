@@ -477,6 +477,7 @@ It is also possible to set the namespace using the `CustomToolNamespace` setting
 ```
 
 ## Excluding resx files
+
 Individual resx files can also be excluded from being processed by setting the `SkipFile` metadata to true.
 
 ```xml
@@ -505,3 +506,4 @@ Alternatively it can be set with the attribute `SkipFile="true"`.
 -   [roslyn/Using Additional Files.md at master · dotnet/roslyn](https://github.com/dotnet/roslyn/blob/master/docs/analyzers/Using%20Additional%20Files.md)
 -   [ufcpp - YouTube](https://www.youtube.com/channel/UCY-z_9mau6X-Vr4gk2aWtMQ)
 -   [amis92/csharp-source-generators: A list of C# Source Generators (not necessarily awesome) and associated resources: articles, talks, demos.](https://github.com/amis92/csharp-source-generators)
+-   [A NuGet package workflow using GitHub Actions | by Andrew Craven | Medium](https://acraven.medium.com/a-nuget-package-workflow-using-github-actions-7da8c6557863)
