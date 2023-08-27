@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using FluentAssertions;
 using Xunit;
 
@@ -33,6 +33,13 @@ public class TestResxFiles
 		Test2.CreateDate.Should().Be("OldestEnUs");
 		Thread.CurrentThread.CurrentUICulture = new CultureInfo("da-DK");
 		Test2.CreateDate.Should().Be("OldestDaDK");
+	}
+
+	[Fact]
+	public void TestSkipFile_DoesNotGenerate()
+	{
+		GetType().Assembly.GetTypes().Should()
+			.NotContain(t => t.Name == "Test3");
 	}
 
 }

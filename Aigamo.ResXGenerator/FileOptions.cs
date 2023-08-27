@@ -18,6 +18,7 @@ public readonly record struct FileOptions
 	public string LocalNamespace { get; init; }
 	public bool GenerateCode { get; init; }
 	public string EmbeddedFilename { get; init; }
+	public bool SkipFile { get; init; }
 	public bool IsValid { get; init; }
 
 	public FileOptions(
@@ -128,6 +129,14 @@ public readonly record struct FileOptions
 		)
 		{
 			GenerateCode = genCodeSwitch.Equals("true", StringComparison.OrdinalIgnoreCase);
+		}
+
+		if (
+			options.TryGetValue("build_metadata.EmbeddedResource.SkipFile", out var skipFile) &&
+			skipFile is { Length: > 0 }
+		)
+		{
+			SkipFile = skipFile.Equals("true", StringComparison.OrdinalIgnoreCase);
 		}
 
 		IsValid = globalOptions.IsValid;

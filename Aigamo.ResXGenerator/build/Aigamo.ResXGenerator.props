@@ -31,6 +31,7 @@
     <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="InnerClassName" />
     <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="InnerClassInstanceName" />
     <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="GenerateCode" />
+    <CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="SkipFile" />
   </ItemGroup>
 
 </Project>

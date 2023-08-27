@@ -25,7 +25,7 @@ public class SourceGenerator : IIncrementalGenerator
 				options: x.Right,
 				globalOptions: x.Left.Right
 			))
-			.Where(static x => x.IsValid);
+			.Where(static x => x.IsValid && !x.SkipFile);
 
 		context.RegisterSourceOutput(inputs, (ctx, file) =>
 		{
