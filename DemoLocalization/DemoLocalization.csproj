@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<IsPackable>false</IsPackable>
+		<ResXGenerator_NullForgivingOperators>true</ResXGenerator_NullForgivingOperators>
+		<ResXGenerator_GenerationType>StringLocalizer</ResXGenerator_GenerationType>
+		<ResXGenerator_StaticMembers>false</ResXGenerator_StaticMembers>
+		<ResXGenerator_StaticClass>false</ResXGenerator_StaticClass>
+	</PropertyGroup>
+
+	<Import Project="../Aigamo.ResXGenerator/build/Aigamo.ResXGenerator.props" />
+
+	<ItemGroup>
+		<PackageReference Include="CommandLineParser" Version="2.9.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Aigamo.ResXGenerator\Aigamo.ResXGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="**/*.??.resx;**/*.??-??.resx">
+			<DependentUpon>$([System.IO.Path]::GetFileNameWithoutExtension('%(FileName)')).resx</DependentUpon>
+		</EmbeddedResource>
+	</ItemGroup>
+
+</Project>

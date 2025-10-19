@@ -1,15 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using FluentAssertions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+﻿using FluentAssertions;
 using Xunit;
 
 namespace Aigamo.ResXGenerator.Tests;
 
 public class UtilitiesTests
 {
-
-
 	[Theory]
 	[InlineData("Valid", "Valid")]
 	[InlineData("_Valid", "_Valid")]
@@ -23,19 +18,26 @@ public class UtilitiesTests
 	[InlineData(".Ns.Folder", "Ns.Folder")]
 	[InlineData("Folder with space", "Folder_with_space")]
 	[InlineData("folder with .. space", "folder_with_._space")]
-	public void SanitizeNamespace(string input, string expected)
-	{
-		Utilities.SanitizeNamespace(input).Should().Be(expected);
-	}
+	public void SanitizeNamespace(string input, string expected) => input.SanitizeNamespace().Should().Be(expected);
 
 	[Theory]
 	[InlineData("Valid", "Valid")]
 	[InlineData(".Valid", ".Valid")]
 	[InlineData("8Ns", "8Ns")]
 	[InlineData("..Ns", ".Ns")]
-	public void SanitizeNamespaceWithoutFirstCharRules(string input, string expected)
+	public void SanitizeNamespaceWithoutFirstCharRules(string input, string expected) => input.SanitizeNamespace(false).Should().Be(expected);
+
+	[Fact]
+	public void GetLocalNamespace_ShouldNotGenerateIllegalNamespace()
 	{
-		Utilities.SanitizeNamespace(input, false).Should().Be(expected);
+		var ns = Utilities.GetLocalNamespace("resx", "asd.asd", "path", "name", "root");
+		ns.Should().Be("root");
 	}
 
+	[Fact]
+	public void ResxFileName_ShouldNotGenerateIllegalClassNames()
+	{
+		var ns = Utilities.GetClassNameFromPath("test.cshtml.resx");
+		ns.Should().Be("test");
+	}
 }

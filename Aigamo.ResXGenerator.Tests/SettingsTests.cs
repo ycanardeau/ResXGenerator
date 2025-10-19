@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Aigamo.ResXGenerator.Tools;
 using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -38,6 +39,8 @@ public class SettingsTests
 		globalOptions.PublicClass.Should().Be(false);
 		globalOptions.PartialClass.Should().Be(false);
 		globalOptions.IsValid.Should().Be(true);
+		globalOptions.GenerateCode.Should().Be(false);
+		globalOptions.GenerationType.Should().Be(GenerationType.ResourceManager);
 	}
 
 	[Fact]
@@ -52,7 +55,7 @@ public class SettingsTests
 					MSBuildProjectName = "project1",
 					ResXGenerator_InnerClassName = "test1",
 					ResXGenerator_InnerClassInstanceName = "test2",
-					ResXGenerator_ClassNamePostfix= "test3",
+					ResXGenerator_ClassNamePostfix = "test3",
 					ResXGenerator_InnerClassVisibility = "public",
 					ResXGenerator_NullForgivingOperators = "true",
 					ResXGenerator_StaticClass = "false",
@@ -60,6 +63,7 @@ public class SettingsTests
 					ResXGenerator_GenerateCode = "true",
 					ResXGenerator_PublicClass = "true",
 					ResXGenerator_PartialClass = "true",
+					ResXGenerator_GenerationType = "ResourceManager"
 				},
 				fileOptions: null!
 			),
@@ -79,15 +83,16 @@ public class SettingsTests
 		globalOptions.PublicClass.Should().Be(true);
 		globalOptions.PartialClass.Should().Be(true);
 		globalOptions.IsValid.Should().Be(true);
+		globalOptions.GenerationType.Should().Be(GenerationType.ResourceManager);
 	}
 
 	[Fact]
 	public void FileDefaults()
 	{
-		var fileOptions = FileOptions.Select(
+		var fileOptions = GenFileOptions.Select(
 			file: new GroupedAdditionalFile(
 				mainFile: new AdditionalTextWithHash(new AdditionalTextStub("Path1.resx"), Guid.NewGuid()),
-				subFiles: Array.Empty<AdditionalTextWithHash>()
+				subFiles: []
 			),
 			options: new AnalyzerConfigOptionsProviderStub(
 				globalOptions: null!,
@@ -110,6 +115,7 @@ public class SettingsTests
 		fileOptions.ClassName.Should().Be("Path1");
 		fileOptions.SkipFile.Should().Be(false);
 		fileOptions.IsValid.Should().Be(true);
+		fileOptions.GenerationType.Should().Be(GenerationType.ResourceManager);
 	}
 
 	[Theory]
@@ -131,10 +137,10 @@ public class SettingsTests
 		string expectedEmbeddedFilename
 	)
 	{
-		var fileOptions = FileOptions.Select(
+		var fileOptions = GenFileOptions.Select(
 			file: new GroupedAdditionalFile(
 				mainFile: new AdditionalTextWithHash(new AdditionalTextStub(mainFile), Guid.NewGuid()),
-				subFiles: Array.Empty<AdditionalTextWithHash>()
+				subFiles: []
 			),
 			options: new AnalyzerConfigOptionsProviderStub(
 				globalOptions: null!,
@@ -168,15 +174,16 @@ public class SettingsTests
 		fileOptions.EmbeddedFilename.Should().Be(expectedEmbeddedFilename);
 		fileOptions.ClassName.Should().Be("Path1");
 		fileOptions.IsValid.Should().Be(true);
+		fileOptions.GenerationType.Should().Be(GenerationType.ResourceManager);
 	}
 
 	[Fact]
 	public void File_PostFix()
 	{
-		var fileOptions = FileOptions.Select(
+		var fileOptions = GenFileOptions.Select(
 			file: new GroupedAdditionalFile(
 				mainFile: new AdditionalTextWithHash(new AdditionalTextStub("Path1.resx"), Guid.NewGuid()),
-				subFiles: Array.Empty<AdditionalTextWithHash>()
+				subFiles: []
 			),
 			options: new AnalyzerConfigOptionsProviderStub(
 				globalOptions: null!,
@@ -191,16 +198,17 @@ public class SettingsTests
 	[Fact]
 	public void FileSettings_CanReadAll()
 	{
-		var fileOptions = FileOptions.Select(
+		var fileOptions = GenFileOptions.Select(
 			file: new GroupedAdditionalFile(
 				mainFile: new AdditionalTextWithHash(new AdditionalTextStub("Path1.resx"), Guid.NewGuid()),
-				subFiles: Array.Empty<AdditionalTextWithHash>()
+				subFiles: []
 			),
 			options: new AnalyzerConfigOptionsProviderStub(
 				globalOptions: null!,
 				fileOptions: new AnalyzerConfigOptionsStub
 				{
-					RootNamespace = "namespace1", MSBuildProjectFullPath = "project1.csproj",
+					RootNamespace = "namespace1",
+					MSBuildProjectFullPath = "project1.csproj",
 					CustomToolNamespace = "ns1",
 					InnerClassName = "test1",
 					InnerClassInstanceName = "test2",
@@ -211,6 +219,7 @@ public class SettingsTests
 					PublicClass = "true",
 					PartialClass = "true",
 					GenerateCode = "true",
+					GenerationType = "ResourceManager"
 				}
 			),
 			globalOptions: s_globalOptions
@@ -229,6 +238,7 @@ public class SettingsTests
 		fileOptions.CustomToolNamespace.Should().Be("ns1");
 		fileOptions.GroupedFile.MainFile.File.Path.Should().Be("Path1.resx");
 		fileOptions.ClassName.Should().Be("Path1");
+		fileOptions.GenerationType.Should().Be(GenerationType.ResourceManager);
 	}
 
 	[Fact]
@@ -243,7 +253,7 @@ public class SettingsTests
 					MSBuildProjectName = "project1",
 					ResXGenerator_InnerClassName = "test1",
 					ResXGenerator_InnerClassInstanceName = "test2",
-					ResXGenerator_ClassNamePostfix= "test3",
+					ResXGenerator_ClassNamePostfix = "test3",
 					ResXGenerator_InnerClassVisibility = "public",
 					ResXGenerator_NullForgivingOperators = "true",
 					ResXGenerator_StaticClass = "false",
@@ -255,10 +265,10 @@ public class SettingsTests
 			),
 			token: default
 		);
-		var fileOptions = FileOptions.Select(
+		var fileOptions = GenFileOptions.Select(
 			file: new GroupedAdditionalFile(
 				mainFile: new AdditionalTextWithHash(new AdditionalTextStub("Path1.resx"), Guid.NewGuid()),
-				subFiles: Array.Empty<AdditionalTextWithHash>()
+				subFiles: []
 			),
 			options: new AnalyzerConfigOptionsProviderStub(
 				globalOptions: null!,
@@ -285,10 +295,10 @@ public class SettingsTests
 	[Fact]
 	public void FileSettings_CanSkipIndividualFile()
 	{
-		var fileOptions = FileOptions.Select(
+		var fileOptions = GenFileOptions.Select(
 			file: new GroupedAdditionalFile(
 				mainFile: new AdditionalTextWithHash(new AdditionalTextStub("Path1.resx"), Guid.NewGuid()),
-				subFiles: Array.Empty<AdditionalTextWithHash>()
+				subFiles: []
 			),
 			options: new AnalyzerConfigOptionsProviderStub(
 				globalOptions: null!,
@@ -305,6 +315,52 @@ public class SettingsTests
 		fileOptions.LocalNamespace.Should().Be("namespace1");
 		fileOptions.SkipFile.Should().Be(true);
 		fileOptions.IsValid.Should().Be(true);
+	}
+
+	[Fact]
+	public void FileSettings_CanSwitchGenerationType()
+	{
+		var fileOptions = GenFileOptions.Select(
+			file: new GroupedAdditionalFile(
+				mainFile: new AdditionalTextWithHash(new AdditionalTextStub("Path1.resx"), Guid.NewGuid()),
+				subFiles: []
+			),
+			options: new AnalyzerConfigOptionsProviderStub(
+				globalOptions: null!,
+				fileOptions: new AnalyzerConfigOptionsStub
+				{
+					RootNamespace = "namespace1",
+					MSBuildProjectFullPath = "project1.csproj",
+					GenerationType = "StringLocalizer",
+				}
+			),
+			globalOptions: s_globalOptions
+		);
+		fileOptions.LocalNamespace.Should().Be("namespace1");
+		fileOptions.GenerationType.Should().Be(GenerationType.StringLocalizer);
+		fileOptions.IsValid.Should().Be(true);
+	}
+
+	[Fact]
+	public void GlobalOptions_CanSwitchGenerationType()
+	{
+		var globalOptions = GlobalOptions.Select(
+			 provider: new AnalyzerConfigOptionsProviderStub(
+				 globalOptions: new AnalyzerConfigOptionsStub
+				 {
+					 RootNamespace = "namespace1",
+					 MSBuildProjectFullPath = "project1.csproj",
+					 MSBuildProjectName = "project1",
+					 ResXGenerator_GenerationType = "StringLocalizer"
+				 },
+				 fileOptions: null!
+			 ),
+			 token: default
+		 );
+
+		globalOptions.RootNamespace.Should().Be("namespace1");
+		globalOptions.GenerationType.Should().Be(GenerationType.StringLocalizer);
+		globalOptions.IsValid.Should().Be(true);
 	}
 
 
@@ -325,6 +381,7 @@ public class SettingsTests
 		public string? ResXGenerator_InnerClassName { get; init; }
 		public string? ResXGenerator_InnerClassInstanceName { get; init; }
 		public string? ResXGenerator_GenerateCode { get; init; }
+		public string? ResXGenerator_GenerationType { get; init; }
 		public string? CustomToolNamespace { get; init; }
 		public string? TargetPath { get; init; }
 		public string? ClassNamePostfix { get; init; }
@@ -337,14 +394,16 @@ public class SettingsTests
 		public string? InnerClassName { get; init; }
 		public string? InnerClassInstanceName { get; init; }
 		public string? GenerateCode { get; init; }
+		public string? GenerationType { get; init; }
 		public string? SkipFile { get; init; }
 
 		// ReSharper restore InconsistentNaming
 
 		public override bool TryGetValue(string key, [NotNullWhen(true)] out string? value)
 		{
-			string? GetVal() =>
-				key switch
+			string? GetVal()
+			{
+				return key switch
 				{
 					"build_property.MSBuildProjectFullPath" => MSBuildProjectFullPath,
 					"build_property.MSBuildProjectName" => MSBuildProjectName,
@@ -359,6 +418,7 @@ public class SettingsTests
 					"build_property.ResXGenerator_InnerClassVisibility" => ResXGenerator_InnerClassVisibility,
 					"build_property.ResXGenerator_InnerClassName" => ResXGenerator_InnerClassName,
 					"build_property.ResXGenerator_InnerClassInstanceName" => ResXGenerator_InnerClassInstanceName,
+					"build_property.ResXGenerator_GenerationType" => ResXGenerator_GenerationType,
 					"build_metadata.EmbeddedResource.CustomToolNamespace" => CustomToolNamespace,
 					"build_metadata.EmbeddedResource.TargetPath" => TargetPath,
 					"build_metadata.EmbeddedResource.ClassNamePostfix" => ClassNamePostfix,
@@ -372,29 +432,24 @@ public class SettingsTests
 					"build_metadata.EmbeddedResource.InnerClassInstanceName" => InnerClassInstanceName,
 					"build_metadata.EmbeddedResource.GenerateCode" => GenerateCode,
 					"build_metadata.EmbeddedResource.SkipFile" => SkipFile,
+					"build_metadata.EmbeddedResource.GenerationType" => GenerationType,
 					_ => null
 				};
+			}
 
 			value = GetVal();
 			return value is not null;
 		}
 	}
 
-	private class AnalyzerConfigOptionsProviderStub : AnalyzerConfigOptionsProvider
+	private class AnalyzerConfigOptionsProviderStub(AnalyzerConfigOptions globalOptions, AnalyzerConfigOptions fileOptions) : AnalyzerConfigOptionsProvider
 	{
-		private readonly AnalyzerConfigOptions _fileOptions;
+		private readonly AnalyzerConfigOptions _fileOptions = fileOptions;
 
-		public override AnalyzerConfigOptions GlobalOptions { get; }
-
-		public AnalyzerConfigOptionsProviderStub(AnalyzerConfigOptions globalOptions, AnalyzerConfigOptions fileOptions)
-		{
-			_fileOptions = fileOptions;
-			GlobalOptions = globalOptions;
-		}
+		public override AnalyzerConfigOptions GlobalOptions { get; } = globalOptions;
 
 		public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => throw new NotImplementedException();
 
 		public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => _fileOptions;
-
 	}
 }

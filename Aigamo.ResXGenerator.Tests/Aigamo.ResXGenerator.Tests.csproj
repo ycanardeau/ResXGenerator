@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
@@ -8,7 +8,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
-  <Import Project="../Aigamo.ResXGenerator/build/Aigamo.ResXGenerator.props"/>
+	<Import Project="../Aigamo.ResXGenerator/build/Aigamo.ResXGenerator.props" />
 
 	<ItemGroup>
 		<PackageReference Include="FluentAssertions" Version="5.10.3" />
@@ -17,6 +17,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.9" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
 		<PackageReference Include="xunit" Version="2.4.1" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -35,8 +36,14 @@
 		<EmbeddedResource Update="IntegrationTests\Test2.resx">
 			<GenerateCode>true</GenerateCode>
 		</EmbeddedResource>
+		<EmbeddedResource Update="IntegrationTests\Test2a.resx">
+			<GenerationType>CodeGeneration</GenerationType>
+		</EmbeddedResource>
 		<EmbeddedResource Update="IntegrationTests\Test3.resx">
 			<SkipFile>true</SkipFile>
+		</EmbeddedResource>
+		<EmbeddedResource Update="IntegrationTests\Test4.resx">
+			<GenerationType>StringLocalizer</GenerationType>
 		</EmbeddedResource>
 	</ItemGroup>
 

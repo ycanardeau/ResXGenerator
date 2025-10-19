@@ -1,4 +1,6 @@
-﻿namespace Aigamo.ResXGenerator;
+﻿using Aigamo.ResXGenerator.Extensions;
+
+namespace Aigamo.ResXGenerator.Tools;
 
 public readonly record struct GroupedAdditionalFile
 {
@@ -11,28 +13,17 @@ public readonly record struct GroupedAdditionalFile
 		SubFiles = subFiles.OrderBy(x => x.File.Path, StringComparer.Ordinal).ToArray();
 	}
 
-	public bool Equals(GroupedAdditionalFile other)
-	{
-		return MainFile.Equals(other.MainFile) && SubFiles.SequenceEqual(other.SubFiles);
-	}
+	public bool Equals(GroupedAdditionalFile other) => MainFile.Equals(other.MainFile) && SubFiles.SequenceEqual(other.SubFiles);
 
 	public override int GetHashCode()
 	{
 		unchecked
 		{
 			var hashCode = MainFile.GetHashCode();
-
-			foreach (var additionalText in SubFiles)
-			{
-				hashCode = (hashCode * 397) ^ additionalText.GetHashCode();
-			}
-
+			SubFiles.ForEach(additionalText => hashCode = (hashCode * 397) ^ additionalText.GetHashCode());
 			return hashCode;
 		}
 	}
 
-	public override string ToString()
-	{
-		return $"{nameof(MainFile)}: {MainFile}, {nameof(SubFiles)}: {string.Join("; ", SubFiles ?? Array.Empty<AdditionalTextWithHash>())}";
-	}
+	public override string ToString() => $"{nameof(MainFile)}: {MainFile}, {nameof(SubFiles)}: {string.Join("; ", SubFiles ?? [])}";
 }

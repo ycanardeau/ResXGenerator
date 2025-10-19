@@ -1,4 +1,4 @@
-﻿namespace Aigamo.ResXGenerator;
+﻿namespace Aigamo.ResXGenerator.Tools;
 
 public enum InnerClassVisibility
 {

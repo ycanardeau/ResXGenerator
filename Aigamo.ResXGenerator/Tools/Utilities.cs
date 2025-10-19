@@ -1,6 +1,10 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Aigamo.ResXGenerator.Extensions;
+using Aigamo.ResXGenerator.Models;
+using Aigamo.ResXGenerator.Tools;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Aigamo.ResXGenerator;
 
@@ -17,7 +21,7 @@ public static class Utilities
 				return false;
 			}
 
-			if (languageName.StartsWith("qps-", StringComparison.Ordinal))
+			if (languageName!.StartsWith("qps-", StringComparison.Ordinal))
 			{
 				return true;
 			}
@@ -84,7 +88,7 @@ public static class Utilities
 
 			if (!string.IsNullOrWhiteSpace(targetPath))
 			{
-				localNamespace = Path.GetDirectoryName(targetPath)
+				localNamespace = Path.GetDirectoryName(targetPath)!
 					.Trim(Path.DirectorySeparatorChar)
 					.Trim(Path.AltDirectorySeparatorChar)
 					.Replace(Path.DirectorySeparatorChar, '.')
@@ -134,31 +138,38 @@ public static class Utilities
 		return className;
 	}
 
-	public static string SanitizeNamespace(string ns, bool sanitizeFirstChar = true)
+	public static string SanitizeNamespace(this string ns, bool sanitizeFirstChar = true)
 	{
 		if (string.IsNullOrEmpty(ns))
-		{
 			return ns;
-		}
 
 		// A namespace must contain only alphabetic characters, decimal digits, dots and underscores, and must begin with an alphabetic character or underscore (_)
 		// In case there are invalid chars we'll use same logic as Visual Studio and replace them with underscore (_) and append underscore (_) if project does not start with alphabetic or underscore (_)
 
-		var sanitizedNs = Regex
-			.Replace(ns, @"[^a-zA-Z0-9_\.]", "_");
+		var sanitizedNs = Regex.Replace(ns, @"[^a-zA-Z0-9_\.]", "_");
 
 		// Handle folder containing multiple dots, e.g. 'test..test2' or starting, ending with dots
-		sanitizedNs = Regex
-			.Replace(sanitizedNs, @"\.+", ".");
+		sanitizedNs = Regex.Replace(sanitizedNs, @"\.+", ".");
 
-		if (sanitizeFirstChar)
-		{
-			sanitizedNs = sanitizedNs.Trim('.');
-		}
+		if (sanitizeFirstChar) sanitizedNs = sanitizedNs.Trim('.');
 
-		return sanitizeFirstChar
-			// Handle namespace starting with digit
-			? char.IsDigit(sanitizedNs[0]) ? $"_{sanitizedNs}" : sanitizedNs
-			: sanitizedNs;
+		// Handle namespace starting with digit
+		if (sanitizeFirstChar) return char.IsDigit(sanitizedNs[0]) ? $"_{sanitizedNs}" : sanitizedNs;
+		return sanitizedNs;
+	}
+
+	public static string NamespaceNameCompliant(this string ns) => Regex.Replace(ns, @"[\.\-_]", "");
+
+	public static Location LocateMember(FallBackItem fallBackItem, GenFileOptions options)
+	{
+		var line = fallBackItem.Line;
+		return Location.Create(
+			filePath: options.GroupedFile.MainFile.File.Path,
+			textSpan: new TextSpan(),
+			lineSpan: new LinePositionSpan(
+				start: new LinePosition(line.LineNumber - 1, line.LinePosition - 1),
+				end: new LinePosition(line.LineNumber - 1, line.LinePosition - 1 + fallBackItem.Key.Length)
+			)
+		);
 	}
 }

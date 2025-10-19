@@ -1,8 +1,8 @@
 ﻿using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Aigamo.ResXGenerator;
+namespace Aigamo.ResXGenerator.Tools;
 
-public readonly record struct FileOptions
+public readonly record struct GenFileOptions
 {
 	public string InnerClassInstanceName { get; init; }
 	public string InnerClassName { get; init; }
@@ -17,11 +17,12 @@ public readonly record struct FileOptions
 	public string? CustomToolNamespace { get; init; }
 	public string LocalNamespace { get; init; }
 	public bool GenerateCode { get; init; }
+	public GenerationType GenerationType { get; init; }
 	public string EmbeddedFilename { get; init; }
 	public bool SkipFile { get; init; }
 	public bool IsValid { get; init; }
 
-	public FileOptions(
+	public GenFileOptions(
 		GroupedAdditionalFile groupedFile,
 		AnalyzerConfigOptions options,
 		GlobalOptions globalOptions
@@ -131,6 +132,16 @@ public readonly record struct FileOptions
 			GenerateCode = genCodeSwitch.Equals("true", StringComparison.OrdinalIgnoreCase);
 		}
 
+		GenerationType = globalOptions.GenerationType;
+		if (
+			options.TryGetValue("build_metadata.EmbeddedResource.GenerationType", out var generationTypeSwitch) &&
+			Enum.TryParse(generationTypeSwitch, true, out GenerationType g) &&
+			g != GenerationType.SameAsOuter
+		)
+		{
+			GenerationType = g;
+		}
+
 		if (
 			options.TryGetValue("build_metadata.EmbeddedResource.SkipFile", out var skipFile) &&
 			skipFile is { Length: > 0 }
@@ -142,13 +153,13 @@ public readonly record struct FileOptions
 		IsValid = globalOptions.IsValid;
 	}
 
-	public static FileOptions Select(
+	public static GenFileOptions Select(
 		GroupedAdditionalFile file,
 		AnalyzerConfigOptionsProvider options,
 		GlobalOptions globalOptions
 	)
 	{
-		return new FileOptions(
+		return new GenFileOptions(
 			groupedFile: file,
 			options: options.GetOptions(file.MainFile.File),
 			globalOptions: globalOptions

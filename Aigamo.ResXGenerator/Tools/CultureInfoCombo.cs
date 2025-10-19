@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using Aigamo.ResXGenerator.Models;
+using Aigamo.ResXGenerator.Tools;
 
 namespace Aigamo.ResXGenerator;
 
@@ -14,21 +16,19 @@ public readonly record struct CultureInfoCombo
 			.Select(x => (Path.GetExtension(Path.GetFileNameWithoutExtension(x.File.Path)).TrimStart('.'), y: x))
 			.OrderByDescending(x => x.Item1.Length)
 			.ThenBy(y => y.Item1)
-			.ToList() ?? new List<(string, AdditionalTextWithHash)>();
+			.ToList() ?? [];
 	}
 
-	public IReadOnlyList<(string Iso, AdditionalTextWithHash File)> CultureInfos { get;}
+	public IReadOnlyList<(string Iso, AdditionalTextWithHash File)> CultureInfos { get; }
 
-	public IReadOnlyList<(string Name, int LCID, AdditionalTextWithHash FileWithHash)> GetDefinedLanguages() => CultureInfos?
+	public IReadOnlyList<ComboItem> GetDefinedLanguages() => CultureInfos?
 		.Select(x => (x.File, new CultureInfo(x.Iso)))
-		.Select(x => (Name: x.Item2.Name.Replace('-', '_'), x.Item2.LCID, x.File))
-		.ToList() ?? new List<(string Name, int LCID, AdditionalTextWithHash FileWithHash)>();
+		.Select(x => new ComboItem(x.Item2.Name.Replace('-', '_'), x.Item2.LCID, x.File))
+		.ToList() ?? [];
 
-	public bool Equals(CultureInfoCombo other)
-	{
-		return (CultureInfos ?? Array.Empty<(string Iso, AdditionalTextWithHash File)>()).Select(x => x.Iso)
-			.SequenceEqual(other.CultureInfos?.Select(x => x.Iso) ?? Array.Empty<string>());
-	}
+	public bool Equals(CultureInfoCombo other) =>
+		(CultureInfos ?? []).Select(x => x.Iso)
+		.SequenceEqual(other.CultureInfos?.Select(x => x.Iso) ?? []);
 
 	public override int GetHashCode()
 	{
