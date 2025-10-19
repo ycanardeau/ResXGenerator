@@ -39,8 +39,8 @@ public sealed class ComboGenerator : GeneratorBase<CultureInfoCombo>, IComboGene
 
 		Helper.AppendHeader("Aigamo.ResXGenerator");
 
-		Helper.AppendLine("internal static partial class Helpers");
-		Helper.AppendLine("{");
+		Helper.AppendLineLF("internal static partial class Helpers");
+		Helper.AppendLineLF("{");
 
 		Helper.Append("\tpublic static string GetString_");
 		var functionNamePostFix = Helper.AppendLanguages(definedLanguages);
@@ -56,8 +56,8 @@ public sealed class ComboGenerator : GeneratorBase<CultureInfoCombo>, IComboGene
 
 		Helper.Append(") => ");
 		Helper.Append(Constants.SystemGlobalization);
-		Helper.AppendLine(".CultureInfo.CurrentUICulture.LCID switch");
-		Helper.AppendLine("\t{");
+		Helper.AppendLineLF(".CultureInfo.CurrentUICulture.LCID switch");
+		Helper.AppendLineLF("\t{");
 		var already = new HashSet<int>();
 		definedLanguages.ForEach(ci =>
 		{
@@ -68,12 +68,12 @@ public sealed class ComboGenerator : GeneratorBase<CultureInfoCombo>, IComboGene
 					already.Add(parent);
 					return $"\t\t{parent} => {ci.Name.Replace('-', '_')},";
 				})
-				.ForEach(l => Helper.AppendLine(l));
+				.ForEach(l => Helper.AppendLineLF(l));
 		});
 
-		Helper.AppendLine("\t\t_ => fallback");
-		Helper.AppendLine("\t};");
-		Helper.AppendLine("}");
+		Helper.AppendLineLF("\t\t_ => fallback");
+		Helper.AppendLineLF("\t};");
+		Helper.AppendLineLF("}");
 
 		return Helper.GetOutput(GeneratedFileName, Validator);
 	}

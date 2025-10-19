@@ -69,6 +69,6 @@ public sealed class ResourceManagerGenerator : GeneratorBase<GenFileOptions>, IR
 		Helper.Append(Constants.CultureInfoVariable);
 		Helper.Append(")");
 		Helper.Append(Options.NullForgivingOperators ? "!" : string.Empty);
-		Helper.AppendLine(";");
+		Helper.AppendLineLF(";");
 	}
 }

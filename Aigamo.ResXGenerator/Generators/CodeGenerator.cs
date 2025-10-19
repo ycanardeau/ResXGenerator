@@ -76,7 +76,7 @@ public sealed class CodeGenerator : GeneratorBase<GenFileOptions>, IResXGenerato
 				Helper.Append(SymbolDisplay.FormatLiteral(langValue, true));
 			});
 
-			Helper.AppendLine(");");
+			Helper.AppendLineLF(");");
 		});
 	}
 }
