@@ -1,7 +1,6 @@
 ﻿using Aigamo.ResXGenerator.Extensions;
 using Aigamo.ResXGenerator.Models;
 using Aigamo.ResXGenerator.Tools;
-#nullable disable
 
 namespace Aigamo.ResXGenerator.Generators;
 

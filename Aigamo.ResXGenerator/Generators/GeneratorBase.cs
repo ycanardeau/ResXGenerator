@@ -2,7 +2,6 @@
 using Aigamo.ResXGenerator.Models;
 using Aigamo.ResXGenerator.Tools;
 using Microsoft.CodeAnalysis.Text;
-#nullable disable
 
 namespace Aigamo.ResXGenerator.Generators;
 
