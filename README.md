@@ -68,8 +68,10 @@ namespace Resources
 
 -	The generator can now generate code to lookup translations instead of using the 20 year old System.Resources.ResourceManager
 
-## New in version 4
--	The generator now include support for IStringLocalizer and static method to register in IServiceCollection (no more need of "magic string" :blush:
+## New in version 4.3
+
+-	The generator now includes support for `IStringLocalizer` and static methods to register resources in `IServiceCollection` (no more need for "magic strings").
+
 ```c#
 var local = provider.GetService<IArtistCategoriesNames>();
 local.Actor // return the value string
@@ -92,19 +94,20 @@ public class MyViewModel(IArtistCategoriesNames resources) : IMyViewModel
 ### GenerationType (per file or globally)
 Use cases: https://github.com/ycanardeau/ResXGenerator/issues/6.
 
-Because the dependency injection on somes frameworks like Blazor. Uses the IStringLocalizer to get resources string. And to keep actual functionality. It now possible to choose the gerneration type by setting 'GenerationType'.
+Some frameworks, like Blazor, use `IStringLocalizer` to get resource strings via dependency injection. To support this while keeping existing functionality, it is now possible to choose the generation type by setting the `GenerationType` parameter.
 
-This paramerter is optional The default value is 'ResourceManager' to keep the actual behavior by default.
+This parameter is optional. The default value is `ResourceManager` to preserve the existing behavior.
 
 AllowedValues :
 -	ResourceManager
-	- When this option chosen the generator will use the classic [System.Resources.ResourceManager](https://learn.microsoft.com/en-us/dotnet/api/system.resources.resourcemanager?view=net-9.0) to get resources string.
+	- When this option is chosen, the generator will use the classic [System.Resources.ResourceManager](https://learn.microsoft.com/en-us/dotnet/api/system.resources.resourcemanager?view=net-9.0) to get resource strings.
 -	CodeGeneration (You can chose this option to replace the GenerateCode option)
-	- When this option chosen the generator will generate code to get resources string. See [Generate Code](#Generate-Code) for more details))
+	- When this option is chosen, the generator will generate code to access resource strings. See [Generate Code](#Generate-Code) for more details.
 -	StringLocalizer
-	- When this option chosen the generator will generate interface and class to use with [Microsoft.Extensions.Localization](https://docs.microsoft.com/en-us/dotnet/core/extensions/localization) `IStringLocalizer<T>`. To see how to use it see [Using IStringLocalizer](#IStringLocalizer)
+	- When this option is chosen, the generator will create interfaces and classes compatible with [Microsoft.Extensions.Localization](https://docs.microsoft.com/en-us/dotnet/core/extensions/localization) `IStringLocalizer<T>`.  
+  See [Using IStringLocalizer](#IStringLocalizer) for usage examples.
 -	SameAsOuter
-	- When this option chosen the generator will use the same generation type as the outer class if any. If no outer class exist it will fall back to 'ResourceManager'.
+	- When this option is chosen, the generator will use the same generation type as the outer class, if any. If no outer class exists, it falls back to `ResourceManager`.
 ```xml
 <ItemGroup>
 	<EmbeddedResource Update="Resources\ArtistCategoriesNames.resx">
@@ -559,12 +562,14 @@ Alternatively it can be set with the attribute `SkipFile="true"`.
 <a name="IStringLocalizer"></a>
 ## Using IStringLocalizer
 
-To enablethe génération of interface and classes for your resource yo need to set de GenerationType to [StringLocalizer](#GenerationType). Note to use this you need to ensure you reference nuget on your project.
+To enable the generation of interfaces and classes for your resources, you need to set the `GenerationType` to [StringLocalizer](#GenerationType).  
+Note: to use this, you must ensure that your project references the following NuGet packages:
+
 - [Microsoft.Extensions.DependencyInjection](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection)
 - [Microsoft.Extensions.Localization](https://www.nuget.org/packages/Microsoft.Extensions.Localization)
 - [Microsoft.Extensions.Logging](https://www.nuget.org/packages/Microsoft.Extensions.Logging)
 
-Now yous can register singletons for resources, simply using extension methods.
+You can now register singletons for resources using extension methods.
 
 Examples for a file ArtistCategoriesNames.resx :
 ```c#
@@ -576,7 +581,8 @@ builder.Services
 	.UsingResXGenerator(); //This will register all resx class in one line of code
 ```
 
-you can also (if you prefer to load ressources by namespace using individual registrations). A class of registration is created by namespace.
+you can also (if you prefer to load resources by namespace using individual registrations). A class of registration is created by namespace.
+
 ```c#
 using MyResourceAssembly;
 
@@ -586,7 +592,8 @@ builder.Services
 	.UsingArtistCategoriesNamesResX(); //This will register all resx class of the namespace in one line of code
 ```
 
-Now simply use the dependency injection to get your resources classes. All interface is in the same namespase as it's resource file. (or configured namespace)
+You can now use dependency injection to get your resource classes.
+All interfaces are in the same namespace as their corresponding resource file (or the configured namespace).
 
 ## References
 
