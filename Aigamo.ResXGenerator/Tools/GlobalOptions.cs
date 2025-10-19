@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.Diagnostics;
+﻿using Aigamo.ResXGenerator.Tools;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Aigamo.ResXGenerator;
 
@@ -17,6 +18,7 @@ public sealed record GlobalOptions // this must be a record or implement IEquata
 	public bool PublicClass { get; }
 	public string ClassNamePostfix { get; }
 	public bool GenerateCode { get; }
+	public GenerationType GenerationType { get; }
 	public bool IsValid { get; }
 
 	public GlobalOptions(AnalyzerConfigOptions options)
@@ -38,6 +40,7 @@ public sealed record GlobalOptions // this must be a record or implement IEquata
 		{
 			IsValid = false;
 		}
+
 		ProjectName = projectName!;
 
 		// Code from: https://github.com/dotnet/roslyn/blob/main/docs/features/source-generators.cookbook.md#consume-msbuild-properties-and-metadata
@@ -97,14 +100,18 @@ public sealed record GlobalOptions // this must be a record or implement IEquata
 			InnerClassInstanceName = innerClassInstanceNameSwitch;
 		}
 
-		GenerateCode = false;
-		if (
+		GenerateCode =
 			options.TryGetValue("build_property.ResXGenerator_GenerateCode", out var genCodeSwitch) &&
 			genCodeSwitch is { Length: > 0 } &&
-			genCodeSwitch.Equals("true", StringComparison.OrdinalIgnoreCase)
+			genCodeSwitch.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+		GenerationType = GenerationType.ResourceManager;
+		if (
+			options.TryGetValue("build_property.ResXGenerator_GenerationType", out var generationTypeSwitch) &&
+			Enum.TryParse(generationTypeSwitch, true, out GenerationType g)
 		)
 		{
-			GenerateCode = true;
+			GenerationType = g;
 		}
 	}
 

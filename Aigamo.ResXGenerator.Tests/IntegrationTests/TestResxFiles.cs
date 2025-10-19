@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using FluentAssertions;
 using Xunit;
 
@@ -36,10 +36,7 @@ public class TestResxFiles
 	}
 
 	[Fact]
-	public void TestSkipFile_DoesNotGenerate()
-	{
+	public void TestSkipFile_DoesNotGenerate() =>
 		GetType().Assembly.GetTypes().Should()
 			.NotContain(t => t.Name == "Test3");
-	}
-
 }

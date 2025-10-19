@@ -44,17 +44,17 @@
 		read any of the formats listed below.
 
 		mimetype: application/x-microsoft.net.object.binary.base64
-		value   : The object must be serialized with 
+		value : The object must be serialized with 
 			: System.Serialization.Formatters.Binary.BinaryFormatter
 			: and then encoded with base64 encoding.
 
 		mimetype: application/x-microsoft.net.object.soap.base64
-		value   : The object must be serialized with 
+		value : The object must be serialized with 
 			: System.Runtime.Serialization.Formatters.Soap.SoapFormatter
 			: and then encoded with base64 encoding.
 
 		mimetype: application/x-microsoft.net.object.bytearray.base64
-		value   : The object must be serialized into a byte array 
+		value : The object must be serialized into a byte array 
 			: using a System.ComponentModel.TypeConverter
 			: and then encoded with base64 encoding.
 	-->

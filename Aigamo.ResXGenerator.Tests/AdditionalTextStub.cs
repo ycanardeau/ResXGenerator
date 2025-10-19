@@ -3,17 +3,11 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Aigamo.ResXGenerator.Tests;
 
-internal class AdditionalTextStub : AdditionalText
+internal class AdditionalTextStub(string path, string? text = null) : AdditionalText
 {
-	private readonly SourceText? _text;
+	private readonly SourceText? _text = text is null ? null : SourceText.From(text);
 
-	public override string Path { get; }
-
-	public AdditionalTextStub(string path, string? text = null)
-	{
-		_text = text is null ? null : SourceText.From(text);
-		Path = path;
-	}
+	public override string Path { get; } = path;
 
 	public override SourceText? GetText(CancellationToken cancellationToken = new()) => _text;
 }

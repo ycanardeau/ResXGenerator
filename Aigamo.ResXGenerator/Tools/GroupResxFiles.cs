@@ -1,6 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Aigamo.ResXGenerator.Extensions;
 
-namespace Aigamo.ResXGenerator;
+namespace Aigamo.ResXGenerator.Tools;
 
 public static class GroupResxFiles
 {
@@ -8,23 +8,22 @@ public static class GroupResxFiles
 	{
 		var lookup = new Dictionary<string, AdditionalTextWithHash>();
 		var res = new Dictionary<AdditionalTextWithHash, List<AdditionalTextWithHash>>();
-		foreach (var file in allFilesWithHash)
+		allFilesWithHash.ForEach(file =>
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
 			var path = file.File.Path;
 			var pathName = Path.GetDirectoryName(path);
 			var baseName = Utilities.GetBaseName(path);
-			if (Path.GetFileNameWithoutExtension(path) == baseName)
-			{
-				var key = pathName + "\\" + baseName;
-				//it should be impossible to exist already, but VS sometimes throws error about duplicate key added. Keep the original entry, not the new one
-				if (!lookup.ContainsKey(key))
-					lookup.Add(key, file);
-				res.Add(file, new List<AdditionalTextWithHash>());
-			}
-		}
-		foreach (var fileWithHash in allFilesWithHash)
+			if (Path.GetFileNameWithoutExtension(path) != baseName) return;
+
+			var key = pathName + "\\" + baseName;
+			//it should be impossible to exist already, but VS sometimes throws error about duplicate key added. Keep the original entry, not the new one
+			if (!lookup.ContainsKey(key))
+				lookup.Add(key, file);
+			res.Add(file, []);
+		});
+		allFilesWithHash.ForEach(fileWithHash =>
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -32,20 +31,17 @@ public static class GroupResxFiles
 			var pathName = Path.GetDirectoryName(path);
 			var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
 			var baseName = Utilities.GetBaseName(path);
-			if (fileNameWithoutExtension == baseName)
-				continue;
+			if (fileNameWithoutExtension == baseName) return;
 			// this might happen if a .nn.resx file exists without a .resx file
-			if (!lookup.TryGetValue(pathName + "\\" + baseName, out var additionalText))
-				continue;
+			if (!lookup.TryGetValue(pathName + "\\" + baseName, out var additionalText)) return;
 			res[additionalText].Add(fileWithHash);
-		}
-		// dont care at all HOW it is sorted, just that end result is the same
-		foreach (var file in res)
+		});
+		// don't care at all HOW it is sorted, just that end result is the same
+		return res.Select(file =>
 		{
 			cancellationToken.ThrowIfCancellationRequested();
-
-			yield return new GroupedAdditionalFile(file.Key, file.Value);
-		}
+			return new GroupedAdditionalFile(file.Key, file.Value);
+		});
 	}
 
 	public static IEnumerable<CultureInfoCombo> DetectChildCombos(IReadOnlyList<GroupedAdditionalFile> groupedAdditionalFiles)
