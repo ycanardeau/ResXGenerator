@@ -14,13 +14,13 @@ public sealed class ResourceManagerGenerator : GeneratorBase<GenFileOptions>, IR
 
 		Helper = new StringBuilderGeneratorHelper(options);
 
-		Content = Options.GroupedFile.MainFile.File.GetText(cancellationToken);
-		if (Content is null)
+		if (Options.GroupedFile.MainFile.File.GetText(cancellationToken) is not { } content)
 		{
 			GeneratedFileName = Options.GroupedFile.MainFile.File.Path;
 			Helper.Append("//ERROR reading file:");
 			return Helper.GetOutput(GeneratedFileName, Validator);
 		}
+		Content = content;
 
 		GeneratedFileName = $"{Options.LocalNamespace}.{Options.ClassName}.g.cs";
 
