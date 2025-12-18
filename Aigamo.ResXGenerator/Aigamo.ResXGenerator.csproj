@@ -22,6 +22,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="Aigamo.ResXGenerator.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="build\**">
 			<Pack>true</Pack>
 			<PackagePath>build\</PackagePath>
@@ -35,9 +39,11 @@
 	</ItemDefinitionGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.Bcl.Memory" Version="10.0.1" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.1" />
+		<PackageReference Include="sly" Version="3.7.7" />
 	</ItemGroup>
 
 	<Import Project="$(MSBuildProjectName).targets" />

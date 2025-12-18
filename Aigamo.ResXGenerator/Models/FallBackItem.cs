@@ -2,4 +2,4 @@
 
 namespace Aigamo.ResXGenerator.Models;
 
-public record FallBackItem(string Key, string Value, IXmlLineInfo Line);
+public record FallBackItem(string Key, string Value, string? Type, IXmlLineInfo Line);

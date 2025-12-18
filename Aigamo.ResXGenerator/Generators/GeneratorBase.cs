@@ -30,7 +30,7 @@ public abstract class GeneratorBase<T> : IGenerator<T>
 			return element
 				.Descendants()
 				.Where(static data => data.Name == "data")
-				.Select(static data => new FallBackItem(data.Attribute("name")!.Value, data.Descendants("value").First().Value, data.Attribute("name")!));
+				.Select(static data => new FallBackItem(data.Attribute("name")!.Value, data.Descendants("value").First().Value, data.Attribute("type")?.Value, data.Attribute("name")!));
 
 		return [];
 	}

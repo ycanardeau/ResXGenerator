@@ -79,6 +79,36 @@ public class Analyser : DiagnosticAnalyzer
 		isEnabledByDefault: true
 	);
 
+	public static readonly DiagnosticDescriptor TypeNameParseError = new(
+		id: "AigamoResXGenerator007",
+		title: "Invalid type name",
+		messageFormat:
+		"The type name specified for member {0} is invalid",
+		category: "ResXGenerator",
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true
+	);
+
+	public static readonly DiagnosticDescriptor ResXFileRefParseError = new(
+		id: "AigamoResXGenerator008",
+		title: "ResXFileRef",
+		messageFormat:
+		"The ResXFileRef resource value specified for member {0} is invalid",
+		category: "ResXGenerator",
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true
+	);
+
+	public static readonly DiagnosticDescriptor TypeNotSupportedForCodeGen = new(
+		id: "AigamoResXGenerator009",
+		title: "The type of the resource is not compatible with code gen mode",
+		messageFormat:
+		"When using StringLocalizer, only string resources are supported. Set GenerationType to ResourceManager.",
+		category: "ResXGenerator",
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true
+	);
+
 	public static DiagnosticDescriptor FatalError => new(
 		id: "AigamoResXGenerator999",
 		title: "Fatal Error generated",
