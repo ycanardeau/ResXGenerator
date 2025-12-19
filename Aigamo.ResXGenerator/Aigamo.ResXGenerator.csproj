@@ -43,7 +43,7 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.1" />
-		<PackageReference Include="sly" Version="3.7.7" PrivateAssets="all" GeneratePathProperty="true" />
+		<PackageReference Include="sly" Version="3.7.7" PrivateAssets="all" GeneratePathProperty="true" IncludeInPackage="true" />
 	</ItemGroup>
 
 	<Import Project="$(MSBuildProjectName).targets" />
@@ -66,5 +66,41 @@
 			<TargetPathWithTargetPlatformMoniker Include="$(Pkgsly)\lib\netstandard2.0\sly.dll" IncludeRuntimeDependency="false" />
 		</ItemGroup>
 	</Target>
+
+	<!-- Reference: https://www.meziantou.net/packaging-a-roslyn-analyzer-with-nuget-dependencies.htm -->
+	<!-- Add a new target that runs before the task that lists all the files to include in the NuGet package.
+			This task must run after the packages resolution target -->
+	<Target Name="AddNuGetDlls" BeforeTargets="_GetPackageFiles">
+			<!-- Merge the collection of PackageReference and Assemblies using the NuGetPackageId key.
+					 This produces a new list containing the DLL path and the "IncludeInPackage" metadata-->
+		<JoinItems Left="@(ResolvedCompileFileDefinitions)" LeftKey="NuGetPackageId" LeftMetadata="*"
+							 Right="@(PackageReference)" RightKey="" RightMetadata="*"
+							 ItemSpecToUse="Left">
+			<Output TaskParameter="JoinResult" ItemName="_PackagesToPack" />
+		</JoinItems>
+
+		<ItemGroup>
+			<!-- Remove NETStandard DLLs -->
+			<_PackagesToPack Remove="@(_PackagesToPack)" Condition="%(NuGetPackageId) == 'NETStandard.Library'" />
+			<_PackagesToPack Remove="@(_PackagesToPack)" Condition="%(_PackagesToPack.IncludeInPackage) != 'true'" />
+		</ItemGroup>
+
+		<Message Importance="High" Text="Adding DLLs from the following packages: @(_PackagesToPack->'%(NuGetPackageId)')" />
+
+		<ItemGroup>
+			<!-- Update the collection of items to pack with the DLLs from the NuGet packages -->
+			<None Include="@(_PackagesToPack)"
+						Pack="true"
+						PackagePath="analyzers/cs"
+						Visible="false" />
+
+			<!-- Add the DLL produced by the current project to the NuGet package -->
+			<None Include="$(OutputPath)\$(AssemblyName).dll"
+						Pack="true"
+						PackagePath="analyzers/cs"
+						Visible="false" />
+		</ItemGroup>
+	</Target>
+
 
 </Project>
