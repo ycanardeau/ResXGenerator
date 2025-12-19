@@ -109,7 +109,8 @@ public class TypeNameParserTests
 		// List`1 - open generic with 1 type parameter
 		// Note: Open generics without type arguments may not be supported in all grammar variations
 		// This tests the basic generic arity recognition
-		var typeName = "System.Collections.Generic.List`1[[System.String]]";
+		var typeName = "System.Collections.Generic.List`1";
+		typeName.Should().Be(typeof(List<>).FullName);
 
 		var result = _parser.TryParse(typeName, out var parsed);
 
@@ -118,13 +119,15 @@ public class TypeNameParserTests
 		parsed!.Namespace.Should().Be("System.Collections.Generic");
 		parsed.SimpleName.Should().Be("List");
 		parsed.GenericArity.Should().Be(1);
-		parsed.GenericArguments.Should().HaveCount(1);
+		parsed.GenericArguments.Should().HaveCount(0);
+		parsed.FullName.Should().Be(typeName);
 	}
 
 	[Fact]
 	public void Parse_ClosedGenericType_SingleArg_ShouldSucceed()
 	{
 		var typeName = "System.Collections.Generic.List`1[[System.Int32]]";
+		//typeName.Should().Be(typeof(List<int>).FullName); // This won't match because Type.FullName uses assembly-qualified names for generic args
 
 		var result = _parser.TryParse(typeName, out var parsed);
 
@@ -134,12 +137,14 @@ public class TypeNameParserTests
 		parsed.GenericArguments.Should().HaveCount(1);
 		parsed.GenericArguments[0].Namespace.Should().Be("System");
 		parsed.GenericArguments[0].SimpleName.Should().Be("Int32");
+		parsed.FullName.Should().Be(typeName);
 	}
 
 	[Fact]
 	public void Parse_ClosedGenericType_MultipleArgs_ShouldSucceed()
 	{
 		var typeName = "System.Collections.Generic.Dictionary`2[[System.String],[System.Int32]]";
+		//typeName.Should().Be(typeof(IDictionary<string, int>).FullName); // This won't match because Type.FullName uses assembly-qualified names for generic args
 
 		var result = _parser.TryParse(typeName, out var parsed);
 
@@ -151,6 +156,7 @@ public class TypeNameParserTests
 		parsed.GenericArguments.Should().HaveCount(2);
 		parsed.GenericArguments[0].SimpleName.Should().Be("String");
 		parsed.GenericArguments[1].SimpleName.Should().Be("Int32");
+		parsed.FullName.Should().Be(typeName);
 	}
 
 	[Fact]
@@ -158,6 +164,7 @@ public class TypeNameParserTests
 	{
 		// List of List of String
 		var typeName = "System.Collections.Generic.List`1[[System.Collections.Generic.List`1[[System.String]]]]";
+		//typeName.Should().Be(typeof(List<List<string>>).FullName); // This won't match because Type.FullName uses assembly-qualified names for generic args
 
 		var result = _parser.TryParse(typeName, out var parsed);
 
@@ -172,7 +179,7 @@ public class TypeNameParserTests
 		innerList.GenericArguments.Should().HaveCount(1);
 		innerList.GenericArguments[0].SimpleName.Should().Be("String");
 		// FullName doesn't include the generic argument brackets - it's just the type name with arity marker
-		parsed.FullName.Should().Be("System.Collections.Generic.List`1");
+		parsed.FullName.Should().Be(typeName);
 		parsed.ToCSharp().Should().Be("System.Collections.Generic.List<System.Collections.Generic.List<System.String>>");
 	}
 
@@ -361,6 +368,8 @@ public class TypeNameParserTests
 		parsed!.SimpleName.Should().Be("List");
 		parsed.GenericArity.Should().Be(1);
 		parsed.ArrayRanks.Should().HaveCount(1);
+		parsed.GenericArguments.Count.Should().Be(1);
+		parsed.GenericArguments[0].FullName.Should().Be("System.Int32");
 	}
 
 	[Fact]
@@ -399,12 +408,13 @@ public class TypeNameParserTests
 	public void FullName_GenericType_ShouldIncludeArity()
 	{
 		var typeName = "System.Collections.Generic.List`1[[System.String]]";
+		//typeName.Should().Be(typeof(List<string>).FullName); // This won't match because Type.FullName uses assembly-qualified names for generic args
 
 		var result = _parser.TryParse(typeName, out var parsed);
 
 		result.Should().BeTrue();
 		parsed.Should().NotBeNull();
-		parsed!.FullName.Should().Be("System.Collections.Generic.List`1");
+		parsed!.FullName.Should().Be(typeName);
 	}
 
 	#endregion

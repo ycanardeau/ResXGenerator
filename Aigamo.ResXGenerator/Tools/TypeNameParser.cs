@@ -52,6 +52,9 @@ internal class TypeNameParser
 		[Lexeme(@"-")]
 		Dash = 12,
 
+		[Lexeme(@"[0-9][0-9a-zA-Z_]+")]
+		NumberPrefixedIdentifier = 13,
+
 		[Lexeme(@"[ \t]+", isSkippable: true)]
 		Whitespace = 100,
 	}
@@ -248,6 +251,19 @@ internal class TypeNameParser
 			return qualifiedName;
 		}
 
+		[Production("baseType: qualifiedName GenericArity")]
+		public ParsedTypeName BaseTypeGenericNoParams(
+			ParsedTypeName qualifiedName,
+			Token<TypeNameToken> arity)
+		{
+			var arityStr = arity.Value.Substring(1);
+			if (int.TryParse(arityStr, out var arityValue))
+			{
+				qualifiedName.GenericArity = arityValue;
+			}
+			return qualifiedName;
+		}
+
 		[Production("baseType: qualifiedName")]
 		public ParsedTypeName BaseTypeSimple(ParsedTypeName qualifiedName)
 		{
@@ -281,7 +297,7 @@ internal class TypeNameParser
 			return type;
 		}
 
-		[Production("genericArg: qualifiedName")]
+		[Production("genericArg: baseType")]
 		public ParsedTypeName GenericArgSimple(ParsedTypeName type)
 		{
 			return type;
@@ -396,6 +412,18 @@ internal class TypeNameParser
 		public ParsedTypeName PropValueNumberDot(Token<TypeNameToken> first, Token<TypeNameToken> dot, ParsedTypeName rest)
 		{
 			return new ParsedTypeName { Namespace = first.Value + "." + rest.Namespace };
+		}
+
+		[Production("propValue: Number Identifier")]
+		public ParsedTypeName PropValueNumberIdentifier(Token<TypeNameToken> first, Token<TypeNameToken> id)
+		{
+			return new ParsedTypeName { Namespace = first.Value + id.Value };
+		}
+
+		[Production("propValue: NumberPrefixedIdentifier")]
+		public ParsedTypeName PropValueNumberPrefixedIdentifier(Token<TypeNameToken> id)
+		{
+			return new ParsedTypeName { Namespace = id.Value };
 		}
 
 		[Production("propValue: Identifier")]
@@ -567,6 +595,21 @@ internal class TypeNameParser
 				{
 					sb.Append('`');
 					sb.Append(GenericArity);
+				}
+				if (GenericArguments.Count > 0)
+				{
+					sb.Append('[');
+					for (int i = 0; i < GenericArguments.Count; i++)
+					{
+						sb.Append('[');
+						sb.Append(GenericArguments[i].FullName);
+						sb.Append(']');
+						if (i < GenericArguments.Count - 1)
+						{
+							sb.Append(',');
+						}
+					}
+					sb.Append(']');
 				}
 				sb.Append('*', PointerDepth);
 				for (int i = 0; i < ArrayRanks.Count; i++)
