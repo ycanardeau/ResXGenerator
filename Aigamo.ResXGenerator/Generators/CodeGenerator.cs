@@ -2,7 +2,6 @@
 using Aigamo.ResXGenerator.Extensions;
 using Aigamo.ResXGenerator.Models;
 using Aigamo.ResXGenerator.Tools;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Aigamo.ResXGenerator.Generators;
@@ -65,7 +64,7 @@ public sealed class CodeGenerator : GeneratorBase<GenFileOptions>, IResXGenerato
 			var memberResult = Helper.GenerateMember(fbi, Options, Validator);
 			if (memberResult is not { valid: true }) return;
 
-			Validator.ValidateTypeForCodeGen(memberResult.typeName, fbi, Options);
+			if (!Validator.ValidateTypeForCodeGen(memberResult.typeName, fbi, Options)) return;
 
 			Helper.Append(" => GetString_");
 			Helper.AppendLanguages(definedLanguages);

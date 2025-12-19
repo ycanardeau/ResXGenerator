@@ -216,6 +216,7 @@ public class IntegrityValidator
 				location: Utilities.LocateMember(fallbackItem, options),
 				fallbackItem.Key
 			));
+			return false;
 		}
 		return true;
 	}
