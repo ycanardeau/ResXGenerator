@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
@@ -43,7 +43,7 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.1" />
-		<PackageReference Include="sly" Version="3.7.7" />
+		<PackageReference Include="sly" Version="3.7.7" PrivateAssets="all" GeneratePathProperty="true" />
 	</ItemGroup>
 
 	<Import Project="$(MSBuildProjectName).targets" />
@@ -56,5 +56,15 @@
 		<None Include="../README.md" Pack="true" PackagePath="\" />
 		<None Include="../QUICKSTART.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
+
+	<PropertyGroup>
+		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+	</PropertyGroup>
+
+	<Target Name="GetDependencyTargetPaths">
+		<ItemGroup>
+			<TargetPathWithTargetPlatformMoniker Include="$(Pkgsly)\lib\netstandard2.0\sly.dll" IncludeRuntimeDependency="false" />
+		</ItemGroup>
+	</Target>
 
 </Project>

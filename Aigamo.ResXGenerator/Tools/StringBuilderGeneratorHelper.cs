@@ -179,7 +179,7 @@ public class StringBuilderGeneratorHelper
 		Builder.Append(Indent);
 		Builder.Append("public ");
 		Builder.Append(options.StaticMembers ? "static " : string.Empty);
-		Builder.Append("string");
+		Builder.Append(typeName.ToCSharp());
 		Builder.Append(options.NullForgivingOperators ? null : "?");
 		Builder.Append(" ");
 		Builder.Append(memberName);

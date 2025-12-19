@@ -171,7 +171,8 @@ public class TypeNameParserTests
 		innerList.GenericArity.Should().Be(1);
 		innerList.GenericArguments.Should().HaveCount(1);
 		innerList.GenericArguments[0].SimpleName.Should().Be("String");
-		parsed.FullName.Should().Be(typeName);
+		// FullName doesn't include the generic argument brackets - it's just the type name with arity marker
+		parsed.FullName.Should().Be("System.Collections.Generic.List`1");
 		parsed.ToCSharp().Should().Be("System.Collections.Generic.List<System.Collections.Generic.List<System.String>>");
 	}
 
@@ -192,7 +193,7 @@ public class TypeNameParserTests
 		parsed!.Namespace.Should().Be(expectedNamespace);
 		parsed.SimpleName.Should().Be(expectedSimpleName);
 		parsed.ArrayRanks.Should().HaveCount(1);
-		parsed.ArrayRanks[0].Should().Be(expectedRank);
+		parsed.ArrayRanks[0].Rank.Should().Be(expectedRank);
 		parsed.FullName.Should().Be(typeName);
 	}
 
@@ -207,7 +208,7 @@ public class TypeNameParserTests
 		result.Should().BeTrue();
 		parsed.Should().NotBeNull();
 		parsed!.ArrayRanks.Should().HaveCount(1);
-		parsed.ArrayRanks[0].Should().Be(expectedRank);
+		parsed.ArrayRanks[0].Rank.Should().Be(expectedRank);
 		parsed.FullName.Should().Be(typeName);
 	}
 
@@ -221,8 +222,8 @@ public class TypeNameParserTests
 		result.Should().BeTrue();
 		parsed.Should().NotBeNull();
 		parsed!.ArrayRanks.Should().HaveCount(2);
-		parsed.ArrayRanks[0].Should().Be(1);
-		parsed.ArrayRanks[1].Should().Be(1);
+		parsed.ArrayRanks[0].Rank.Should().Be(1);
+		parsed.ArrayRanks[1].Rank.Should().Be(1);
 		parsed.FullName.Should().Be(typeName);
 	}
 
@@ -290,6 +291,20 @@ public class TypeNameParserTests
 		parsed!.Namespace.Should().Be("MyNamespace");
 		parsed.SimpleName.Should().Be("MyClass");
 		parsed.AssemblyName.Should().Be("MyAssembly");
+	}
+
+	[Fact]
+	public void Parse_SimpleAssemblyQualifiedNameWithSpecialChars_ShouldSucceed()
+	{
+		var typeName = "MyNamespace.MyClass, My.Assembly-That_Has.Weird_Name";
+
+		var result = _parser.TryParse(typeName, out var parsed);
+
+		result.Should().BeTrue();
+		parsed.Should().NotBeNull();
+		parsed!.Namespace.Should().Be("MyNamespace");
+		parsed.SimpleName.Should().Be("MyClass");
+		parsed.AssemblyName.Should().Be("My.Assembly-That_Has.Weird_Name");
 	}
 
 	[Fact]
@@ -436,6 +451,24 @@ public class TypeNameParserTests
 		// Verify both results are correct
 		parsed1!.SimpleName.Should().Be("String");
 		parsed2!.SimpleName.Should().Be("Int32");
+	}
+
+	#endregion
+
+	#region ResX File Ref Types
+
+	[Theory]
+	[InlineData("System.Resources.ResXFileRef, System.Windows.Forms", "System.Resources", "ResXFileRef", "System.Windows.Forms")]
+	[InlineData("System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089", "System", "Byte", "mscorlib")]
+	public void Parse_ResXFileRefType_ShouldSucceed(string typeName, string expectedNamespace, string expectedSimpleName, string expectedAssembly)
+	{
+		var result = _parser.TryParse(typeName, out var parsed);
+
+		result.Should().BeTrue($"Failed to parse: {typeName}");
+		parsed.Should().NotBeNull();
+		parsed!.Namespace.Should().Be(expectedNamespace);
+		parsed.SimpleName.Should().Be(expectedSimpleName);
+		parsed.AssemblyName.Should().Be(expectedAssembly);
 	}
 
 	#endregion

@@ -49,6 +49,9 @@ internal class TypeNameParser
 		[Lexeme(@"[0-9]+")]
 		Number = 11,
 
+		[Lexeme(@"-")]
+		Dash = 12,
+
 		[Lexeme(@"[ \t]+", isSkippable: true)]
 		Whitespace = 100,
 	}
@@ -60,10 +63,27 @@ internal class TypeNameParser
 		// Top-level: typeSpec
 		// ==========================================
 
+		[Production("typeSpec: simpleTypeSpec Comma assemblySpec Ampersand")]
+		public ParsedTypeName ReferenceTypeWithAssembly(ParsedTypeName simpleType, Token<TypeNameToken> comma, ParsedTypeName assembly, Token<TypeNameToken> ampersand)
+		{
+			simpleType.AssemblyName = assembly.AssemblyName;
+			simpleType.AssemblyProperties = assembly.AssemblyProperties;
+			simpleType.IsReference = true;
+			return simpleType;
+		}
+
 		[Production("typeSpec: simpleTypeSpec Ampersand")]
 		public ParsedTypeName ReferenceType(ParsedTypeName simpleType, Token<TypeNameToken> ampersand)
 		{
 			simpleType.IsReference = true;
+			return simpleType;
+		}
+
+		[Production("typeSpec: simpleTypeSpec Comma assemblySpec")]
+		public ParsedTypeName TypeSpecWithAssembly(ParsedTypeName simpleType, Token<TypeNameToken> comma, ParsedTypeName assembly)
+		{
+			simpleType.AssemblyName = assembly.AssemblyName;
+			simpleType.AssemblyProperties = assembly.AssemblyProperties;
 			return simpleType;
 		}
 
@@ -228,14 +248,6 @@ internal class TypeNameParser
 			return qualifiedName;
 		}
 
-		[Production("baseType: qualifiedName Comma assemblySpec")]
-		public ParsedTypeName BaseTypeWithAssembly(ParsedTypeName qualifiedName, Token<TypeNameToken> comma, ParsedTypeName assembly)
-		{
-			qualifiedName.AssemblyName = assembly.AssemblyName;
-			qualifiedName.AssemblyProperties = assembly.AssemblyProperties;
-			return qualifiedName;
-		}
-
 		[Production("baseType: qualifiedName")]
 		public ParsedTypeName BaseTypeSimple(ParsedTypeName qualifiedName)
 		{
@@ -279,19 +291,59 @@ internal class TypeNameParser
 		// assemblySpec: assembly name with optional properties
 		// ==========================================
 
-		[Production("assemblySpec: Identifier Comma assemblyProps")]
-		public ParsedTypeName AssemblySpecWithProps(Token<TypeNameToken> name, Token<TypeNameToken> comma, ParsedTypeName props)
+		[Production("assemblySpec: assemblyName Comma assemblyProps")]
+		public ParsedTypeName AssemblySpecWithProps(ParsedTypeName name, Token<TypeNameToken> comma, ParsedTypeName props)
 		{
 			var result = new ParsedTypeName();
-			result.AssemblyName = name.Value;
+			result.AssemblyName = name.AssemblyName;
 			result.AssemblyProperties = props.AssemblyProperties;
 			return result;
 		}
 
-		[Production("assemblySpec: Identifier")]
-		public ParsedTypeName AssemblySpecSimple(Token<TypeNameToken> name)
+		[Production("assemblySpec: assemblyName")]
+		public ParsedTypeName AssemblySpecName(ParsedTypeName name)
 		{
-			return new ParsedTypeName { AssemblyName = name.Value };
+			return new ParsedTypeName { AssemblyName = name.AssemblyName };
+		}
+
+		// ==========================================
+		// assemblyName: assembly name parts joined by dots/dashes
+		// ==========================================
+
+		[Production("assemblyName: Identifier Dot assemblyName")]
+		public ParsedTypeName AssemblyNameDot(Token<TypeNameToken> first, Token<TypeNameToken> dot, ParsedTypeName rest)
+		{
+			return new ParsedTypeName { AssemblyName = first.Value + "." + rest.AssemblyName };
+		}
+
+		[Production("assemblyName: Identifier Dash assemblyName")]
+		public ParsedTypeName AssemblyNameDash(Token<TypeNameToken> first, Token<TypeNameToken> dash, ParsedTypeName rest)
+		{
+			return new ParsedTypeName { AssemblyName = first.Value + "-" + rest.AssemblyName };
+		}
+
+		[Production("assemblyName: Number Dot assemblyName")]
+		public ParsedTypeName AssemblyNameNumberDot(Token<TypeNameToken> first, Token<TypeNameToken> dot, ParsedTypeName rest)
+		{
+			return new ParsedTypeName { AssemblyName = first.Value + "." + rest.AssemblyName };
+		}
+
+		[Production("assemblyName: Number Dash assemblyName")]
+		public ParsedTypeName AssemblyNameNumberDash(Token<TypeNameToken> first, Token<TypeNameToken> dash, ParsedTypeName rest)
+		{
+			return new ParsedTypeName { AssemblyName = first.Value + "-" + rest.AssemblyName };
+		}
+
+		[Production("assemblyName: Identifier")]
+		public ParsedTypeName AssemblyNameIdentifier(Token<TypeNameToken> id)
+		{
+			return new ParsedTypeName { AssemblyName = id.Value };
+		}
+
+		[Production("assemblyName: Number")]
+		public ParsedTypeName AssemblyNameNumber(Token<TypeNameToken> num)
+		{
+			return new ParsedTypeName { AssemblyName = num.Value };
 		}
 
 		// ==========================================
