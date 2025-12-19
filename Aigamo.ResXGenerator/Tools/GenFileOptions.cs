@@ -43,7 +43,20 @@ public readonly record struct GenFileOptions
 			globalOptions.ProjectName,
 			globalOptions.RootNamespace);
 
-		EmbeddedFilename = string.IsNullOrEmpty(detectedNamespace) ? classNameFromFileName : $"{detectedNamespace}.{classNameFromFileName}";
+		// LogicalName metadata takes precedence over all other embedded resource naming schemes, but it should end in ".resources" which we don't pass to ResourceManager
+		// See https://learn.microsoft.com/en-us/dotnet/core/resources/manifest-file-names
+		var logicalNameMetadata = options.TryGetValue("build_metadata.EmbeddedResource.LogicalName", out var logicalName) &&
+			logicalName is { Length: > 0 } && logicalName.EndsWith(".resources", StringComparison.OrdinalIgnoreCase)
+				? logicalName.Substring(0, logicalName.Length - ".resources".Length)
+				: null;
+
+		// ManifestResourceName metadata takes second precedence over default embedded resource naming scheme
+		var manifestResourceNameMetadata = options.TryGetValue("build_metadata.EmbeddedResource.ManifestResourceName", out var manifestResourceName) &&
+			manifestResourceName is { Length: > 0 }
+				? manifestResourceName
+				: null;
+
+		EmbeddedFilename = logicalNameMetadata ?? manifestResourceNameMetadata ?? (string.IsNullOrEmpty(detectedNamespace) ? classNameFromFileName : $"{detectedNamespace}.{classNameFromFileName}");
 
 		LocalNamespace =
 			options.TryGetValue("build_metadata.EmbeddedResource.TargetPath", out var targetPath) &&

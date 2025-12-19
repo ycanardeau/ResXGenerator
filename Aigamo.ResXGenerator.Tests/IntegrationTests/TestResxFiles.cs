@@ -48,4 +48,11 @@ public class TestResxFiles
 	public void TestSkipFile_DoesNotGenerate() =>
 		GetType().Assembly.GetTypes().Should()
 			.NotContain(t => t.Name == "Test3");
+
+	[Fact]
+	public void TestLogicalNameMetadata()
+	{
+		// Simply loading a resource should prove that the LogicalName was interpreted correctly
+		Test5.CreateDate.Should().Be("Oldest");
+	}
 }

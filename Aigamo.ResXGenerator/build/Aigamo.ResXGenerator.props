@@ -34,6 +34,8 @@
 		<CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="GenerateCode" />
 		<CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="SkipFile" />
 		<CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="GenerationType" />
+		<CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="LogicalName" />
+		<CompilerVisibleItemMetadata Include="EmbeddedResource" MetadataName="ManifestResourceName" />
 	</ItemGroup>
 
 </Project>

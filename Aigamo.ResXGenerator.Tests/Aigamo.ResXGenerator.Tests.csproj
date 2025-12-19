@@ -44,6 +44,9 @@
 		<EmbeddedResource Update="IntegrationTests\Test3.resx">
 			<SkipFile>true</SkipFile>
 		</EmbeddedResource>
+		<EmbeddedResource Update="IntegrationTests\Test5.resx">
+		  <LogicalName>MyCustomResourceFileName.resources</LogicalName>
+		</EmbeddedResource>
 		<EmbeddedResource Update="IntegrationTests\Test4.resx">
 			<GenerationType>StringLocalizer</GenerationType>
 		</EmbeddedResource>
