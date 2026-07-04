@@ -3,6 +3,7 @@ using System.Resources;
 using System.Text;
 using Aigamo.ResXGenerator.Extensions;
 using Aigamo.ResXGenerator.Models;
+using Microsoft.CodeAnalysis;
 
 namespace Aigamo.ResXGenerator.Tools;
 
@@ -86,7 +87,7 @@ public class StringBuilderGeneratorHelper
 		Builder.AppendLineLF("}");
 	}
 
-	public (bool valid, bool resourceAccessByName) GenerateMember(FallBackItem fallbackItem, GenFileOptions options, IntegrityValidator validator)
+	internal (bool valid, bool resourceAccessByName, TypeNameParser.ParsedTypeName? typeName) GenerateMember(FallBackItem fallbackItem, GenFileOptions options, IntegrityValidator validator)
 	{
 		string memberName;
 		bool resourceAccessByName;
@@ -103,8 +104,41 @@ public class StringBuilderGeneratorHelper
 		}
 
 
-		if (!validator.ValidateMember(fallbackItem, options, ContainerClassName)) return (false, resourceAccessByName);
+		if (!validator.ValidateMember(fallbackItem, options, ContainerClassName)) return (false, resourceAccessByName, null);
 
+		var typeNameResult = validator.ValidateTypeName(fallbackItem, options);
+		if (!typeNameResult.valid) return (false, resourceAccessByName, null);
+
+		switch (typeNameResult.typeName)
+		{
+			case null:
+			case { FullName: "System.String"}:
+				GenerateValidatedMemberAsString(fallbackItem, options, memberName);
+				break;
+			case { FullName: "System.Resources.ResXFileRef" }:
+				// ReXFileRef indicates that the string is of the form "<file path>;<type name>[;<encoding]", meaning that the
+				// resource compiler actually compiles the contents of the file for the resource. The type used to cast the
+				// resource is specified after the first semicolon. However the file name could contain a semicolon and in that
+				// case is specified in quotes.
+
+				var resxFileRefType = validator.ValidateResXFileRefValue(fallbackItem, options);
+				if (!resxFileRefType.valid) return (false, resourceAccessByName, null);
+
+				GenerateValidatedMemberAsAnyType(fallbackItem, options, memberName, resxFileRefType.typeName!);
+
+				return (true, resourceAccessByName, resxFileRefType.typeName);
+
+			default:
+				GenerateValidatedMemberAsAnyType(fallbackItem, options, memberName, typeNameResult.typeName);
+
+				break;
+		};
+
+		return (true, resourceAccessByName, typeNameResult.typeName);
+	}
+
+	private void GenerateValidatedMemberAsString(FallBackItem fallbackItem, GenFileOptions options, string memberName)
+	{
 		Builder.AppendLineLF();
 
 		Builder.Append(Indent);
@@ -125,7 +159,30 @@ public class StringBuilderGeneratorHelper
 		Builder.Append(options.NullForgivingOperators ? null : "?");
 		Builder.Append(" ");
 		Builder.Append(memberName);
-		return (true, resourceAccessByName);
+	}
+
+	private void GenerateValidatedMemberAsAnyType(FallBackItem fallbackItem, GenFileOptions options, string memberName, TypeNameParser.ParsedTypeName typeName)
+	{
+		Builder.AppendLineLF();
+
+		Builder.Append(Indent);
+		Builder.AppendLineLF("/// <summary>");
+
+		Builder.Append(Indent);
+		Builder.Append("/// Looks up a localized resource of type ");
+		Builder.Append(typeName.FullName.ToXmlCommentSafe(Indent));
+		Builder.AppendLineLF(".");
+
+		Builder.Append(Indent);
+		Builder.AppendLineLF("/// </summary>");
+
+		Builder.Append(Indent);
+		Builder.Append("public ");
+		Builder.Append(options.StaticMembers ? "static " : string.Empty);
+		Builder.Append(typeName.ToCSharp());
+		Builder.Append(options.NullForgivingOperators ? null : "?");
+		Builder.Append(" ");
+		Builder.Append(memberName);
 	}
 
 	public void AppendResourceManagerUsings()

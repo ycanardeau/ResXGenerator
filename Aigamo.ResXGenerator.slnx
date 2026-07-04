@@ -4,6 +4,7 @@
     <File Path="README.md" />
   </Folder>
   <Project Path="Aigamo.ResXGenerator.Tests/Aigamo.ResXGenerator.Tests.csproj" />
+  <Project Path="Aigamo.ResXGenerator.Tests.Windows/Aigamo.ResXGenerator.Tests.Windows.csproj" />
   <Project Path="Aigamo.ResXGenerator/Aigamo.ResXGenerator.csproj" />
   <Project Path="DemoLocalization/DemoLocalization.csproj" />
 </Solution>

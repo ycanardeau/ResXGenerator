@@ -61,7 +61,10 @@ public sealed class CodeGenerator : GeneratorBase<GenFileOptions>, IResXGenerato
 		fallback.ForEach(fbi =>
 		{
 			cancellationToken.ThrowIfCancellationRequested();
-			if (Helper.GenerateMember(fbi, Options, Validator) is not { valid: true }) return;
+			var memberResult = Helper.GenerateMember(fbi, Options, Validator);
+			if (memberResult is not { valid: true }) return;
+
+			if (!Validator.ValidateTypeForCodeGen(memberResult.typeName, fbi, Options)) return;
 
 			Helper.Append(" => GetString_");
 			Helper.AppendLanguages(definedLanguages);

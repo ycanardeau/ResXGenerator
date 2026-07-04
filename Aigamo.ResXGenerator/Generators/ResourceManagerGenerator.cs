@@ -51,19 +51,43 @@ public sealed class ResourceManagerGenerator : GeneratorBase<GenFileOptions>, IR
 	{
 		if (Helper.GenerateMember(fallbackItem, Options, Validator) is not { valid: true } output) return;
 
-		var (_, resourceAccessByName) = output;
+		var (_, resourceAccessByName, typeName) = output;
 
-		if (resourceAccessByName)
+		switch (typeName)
 		{
-			Helper.Append(" => ResourceManager.GetString(nameof(");
-			Helper.Append(fallbackItem.Key);
-			Helper.Append("), ");
-		}
-		else
-		{
-			Helper.Append(@" => ResourceManager.GetString(""");
-			Helper.Append(fallbackItem.Key.Replace(@"""", @"\"""));
-			Helper.Append(@""", ");
+			case null:
+			case { FullName: "System.String" }:
+				if (resourceAccessByName)
+				{
+					Helper.Append(" => ResourceManager.GetString(nameof(");
+					Helper.Append(fallbackItem.Key);
+					Helper.Append("), ");
+				}
+				else
+				{
+					Helper.Append(@" => ResourceManager.GetString(""");
+					Helper.Append(fallbackItem.Key.Replace(@"""", @"\"""));
+					Helper.Append(@""", ");
+				}
+				break;
+			default:
+				Helper.Append(" => (");
+				Helper.Append(typeName.ToCSharp());
+				Helper.Append(")");
+
+				if (resourceAccessByName)
+				{
+					Helper.Append("ResourceManager.GetObject(nameof(");
+					Helper.Append(fallbackItem.Key);
+					Helper.Append("), ");
+				}
+				else
+				{
+					Helper.Append(@"ResourceManager.GetObject(""");
+					Helper.Append(fallbackItem.Key.Replace(@"""", @"\"""));
+					Helper.Append(@""", ");
+				}
+				break;
 		}
 
 		Helper.Append(Constants.CultureInfoVariable);
