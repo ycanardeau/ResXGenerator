@@ -8,27 +8,6 @@ public class TypeNameParserTests
 {
 	private readonly TypeNameParser _parser = new();
 
-	#region Parser Build Diagnostics
-
-	[Fact]
-	public void BuildParser_ShouldSucceed()
-	{
-		var parser = new TypeNameParser();
-		var buildResult = parser.BuildParser();
-
-		// Output any errors for debugging
-		if (buildResult.IsError)
-		{
-			var errors = string.Join("\n", buildResult.Errors.Select(e => e.Message));
-			buildResult.IsError.Should().BeFalse($"Parser build failed with errors:\n{errors}");
-		}
-
-		buildResult.IsError.Should().BeFalse();
-		buildResult.Result.Should().NotBeNull();
-	}
-
-	#endregion
-
 	#region Simple Type Names
 
 	[Theory]

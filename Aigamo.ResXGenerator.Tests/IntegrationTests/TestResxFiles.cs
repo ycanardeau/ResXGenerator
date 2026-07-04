@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Serialization;
 using Xunit;
 
 namespace Aigamo.ResXGenerator.Tests.IntegrationTests;
@@ -22,7 +21,7 @@ public class TestResxFiles
 		Test1.CreateDate.Should().Be("OldestDaDK");
 
 		// Test embedded files are as expected
-		Test1.TextFile.Should().Be("This is a test.\r\n");
+		Test1.TextFile.Should().Be("This is a test.\n");
 		Test1.BinaryFile.Should().BeEquivalentTo(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		Test1.TestIconAsBytes.Should().NotBeNull();
 		Test1.TestIconAsDrawingIcon.Should().NotBeNull().And.BeOfType<System.Drawing.Icon>().Which.Size.Should().Be(new Size(32, 32));

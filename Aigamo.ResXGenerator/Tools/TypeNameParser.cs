@@ -1,513 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using sly.buildresult;
-using sly.lexer;
-using sly.parser;
-using sly.parser.generator;
 
 namespace Aigamo.ResXGenerator.Tools;
 
 /// <summary>
-/// Parser for .NET fully qualified type names using the sly parser generator.
+/// Parser for .NET fully qualified type names.
+/// Hand-written recursive descent parser with no third-party dependencies.
 /// Grammar based on: https://learn.microsoft.com/en-us/dotnet/fundamentals/reflection/specifying-fully-qualified-type-names
 /// </summary>
 internal class TypeNameParser
 {
-	public enum TypeNameToken
-	{
-		[Lexeme(@"[a-zA-Z_][a-zA-Z0-9_]*")]
-		Identifier = 1,
-
-		[Lexeme(@"\.")]
-		Dot = 2,
-
-		[Lexeme(@",")]
-		Comma = 3,
-
-		[Lexeme(@"`[0-9]+")]
-		GenericArity = 4,
-
-		[Lexeme(@"\[")]
-		OpenBracket = 5,
-
-		[Lexeme(@"\]")]
-		CloseBracket = 6,
-
-		[Lexeme(@"\+")]
-		Plus = 7,
-
-		[Lexeme(@"\*")]
-		Asterisk = 8,
-
-		[Lexeme(@"&")]
-		Ampersand = 9,
-
-		[Lexeme(@"=")]
-		Equals = 10,
-
-		[Lexeme(@"[0-9]+")]
-		Number = 11,
-
-		[Lexeme(@"-")]
-		Dash = 12,
-
-		[Lexeme(@"[0-9][0-9a-zA-Z_]+")]
-		NumberPrefixedIdentifier = 13,
-
-		[Lexeme(@"[ \t]+", isSkippable: true)]
-		Whitespace = 100,
-	}
-
-	[ParserRoot("typeSpec")]
-	public class TypeNameParserDefinition
-	{
-		// ==========================================
-		// Top-level: typeSpec
-		// ==========================================
-
-		[Production("typeSpec: simpleTypeSpec Comma assemblySpec Ampersand")]
-		public ParsedTypeName ReferenceTypeWithAssembly(ParsedTypeName simpleType, Token<TypeNameToken> comma, ParsedTypeName assembly, Token<TypeNameToken> ampersand)
-		{
-			simpleType.AssemblyName = assembly.AssemblyName;
-			simpleType.AssemblyProperties = assembly.AssemblyProperties;
-			simpleType.IsReference = true;
-			return simpleType;
-		}
-
-		[Production("typeSpec: simpleTypeSpec Ampersand")]
-		public ParsedTypeName ReferenceType(ParsedTypeName simpleType, Token<TypeNameToken> ampersand)
-		{
-			simpleType.IsReference = true;
-			return simpleType;
-		}
-
-		[Production("typeSpec: simpleTypeSpec Comma assemblySpec")]
-		public ParsedTypeName TypeSpecWithAssembly(ParsedTypeName simpleType, Token<TypeNameToken> comma, ParsedTypeName assembly)
-		{
-			simpleType.AssemblyName = assembly.AssemblyName;
-			simpleType.AssemblyProperties = assembly.AssemblyProperties;
-			return simpleType;
-		}
-
-		[Production("typeSpec: simpleTypeSpec")]
-		public ParsedTypeName TypeSpecSimple(ParsedTypeName simpleType)
-		{
-			return simpleType;
-		}
-
-		// ==========================================
-		// simpleTypeSpec: base type with suffixes (pointers and/or arrays)
-		// ==========================================
-
-		[Production("simpleTypeSpec: baseType pointerSuffix arraySuffix")]
-		public ParsedTypeName SimpleTypeSpecWithPointerAndArray(ParsedTypeName baseType, ParsedTypeName pointerSuffix, ParsedTypeName arraySuffix)
-		{
-			baseType.PointerDepth = pointerSuffix.PointerDepth;
-			baseType.ArrayRanks.AddRange(arraySuffix.ArrayRanks);
-			return baseType;
-		}
-
-		[Production("simpleTypeSpec: baseType pointerSuffix")]
-		public ParsedTypeName SimpleTypeSpecWithPointer(ParsedTypeName baseType, ParsedTypeName suffix)
-		{
-			baseType.PointerDepth = suffix.PointerDepth;
-			return baseType;
-		}
-
-		[Production("simpleTypeSpec: baseType arraySuffix")]
-		public ParsedTypeName SimpleTypeSpecWithArray(ParsedTypeName baseType, ParsedTypeName suffix)
-		{
-			baseType.ArrayRanks.AddRange(suffix.ArrayRanks);
-			return baseType;
-		}
-
-		[Production("simpleTypeSpec: baseType")]
-		public ParsedTypeName SimpleTypeSpecBase(ParsedTypeName baseType)
-		{
-			return baseType;
-		}
-
-		// ==========================================
-		// pointerSuffix: one or more asterisks
-		// ==========================================
-
-		[Production("pointerSuffix: Asterisk pointerSuffix")]
-		public ParsedTypeName PointerSuffixCons(Token<TypeNameToken> asterisk, ParsedTypeName rest)
-		{
-			rest.PointerDepth++;
-			return rest;
-		}
-
-		[Production("pointerSuffix: Asterisk")]
-		public ParsedTypeName PointerSuffixSingle(Token<TypeNameToken> asterisk)
-		{
-			return new ParsedTypeName { PointerDepth = 1 };
-		}
-
-		// ==========================================
-		// arraySuffix: one or more array specs
-		// ==========================================
-
-		[Production("arraySuffix: arraySpec arraySuffix")]
-		public ParsedTypeName ArraySuffixCons(ParsedTypeName spec, ParsedTypeName rest)
-		{
-			var result = new ParsedTypeName();
-			result.ArrayRanks.AddRange(spec.ArrayRanks);
-			result.ArrayRanks.AddRange(rest.ArrayRanks);
-			return result;
-		}
-
-		[Production("arraySuffix: arraySpec")]
-		public ParsedTypeName ArraySuffixSingle(ParsedTypeName spec)
-		{
-			return spec;
-		}
-
-		// ==========================================
-		// arraySpec: single array dimension specification
-		// ==========================================
-
-		[Production("arraySpec: OpenBracket commas CloseBracket")]
-		public ParsedTypeName ArraySpecMultiDim(Token<TypeNameToken> open, ParsedTypeName commas, Token<TypeNameToken> close)
-		{
-			var result = new ParsedTypeName();
-			result.ArrayRanks.Add(new ArrayRank() { Rank = commas.GenericArity });
-			return result;
-		}
-
-		[Production("arraySpec: OpenBracket Asterisk CloseBracket")]
-		public ParsedTypeName ArraySpecUnknownBound(Token<TypeNameToken> open, Token<TypeNameToken> asterisk, Token<TypeNameToken> close)
-		{
-			var result = new ParsedTypeName();
-			result.ArrayRanks.Add(new ArrayRank() { Rank = 1, IsUnknownBound = true });
-			return result;
-		}
-
-		[Production("arraySpec: OpenBracket CloseBracket")]
-		public ParsedTypeName ArraySpecSingleDim(Token<TypeNameToken> open, Token<TypeNameToken> close)
-		{
-			var result = new ParsedTypeName();
-			result.ArrayRanks.Add(new ArrayRank() { Rank = 1 });
-			return result;
-		}
-
-		// ==========================================
-		// commas: count commas for multi-dimensional arrays
-		// ==========================================
-
-		[Production("commas: Comma commas")]
-		public ParsedTypeName CommasCons(Token<TypeNameToken> comma, ParsedTypeName rest)
-		{
-			rest.GenericArity++;
-			return rest;
-		}
-
-		[Production("commas: Comma")]
-		public ParsedTypeName CommasSingle(Token<TypeNameToken> comma)
-		{
-			return new ParsedTypeName { GenericArity = 2 }; // One comma = 2 dimensions
-		}
-
-		// ==========================================
-		// baseType: type with optional generics and assembly
-		// ==========================================
-
-		[Production("baseType: qualifiedName GenericArity OpenBracket genericArgs CloseBracket Comma assemblySpec")]
-		public ParsedTypeName BaseTypeGenericWithAssembly(
-			ParsedTypeName qualifiedName,
-			Token<TypeNameToken> arity,
-			Token<TypeNameToken> open,
-			ParsedTypeName args,
-			Token<TypeNameToken> close,
-			Token<TypeNameToken> comma,
-			ParsedTypeName assembly)
-		{
-			var arityStr = arity.Value.Substring(1);
-			if (int.TryParse(arityStr, out var arityValue))
-			{
-				qualifiedName.GenericArity = arityValue;
-			}
-			qualifiedName.GenericArguments.AddRange(args.GenericArguments);
-			qualifiedName.AssemblyName = assembly.AssemblyName;
-			qualifiedName.AssemblyProperties = assembly.AssemblyProperties;
-			return qualifiedName;
-		}
-
-		[Production("baseType: qualifiedName GenericArity OpenBracket genericArgs CloseBracket")]
-		public ParsedTypeName BaseTypeGeneric(
-			ParsedTypeName qualifiedName,
-			Token<TypeNameToken> arity,
-			Token<TypeNameToken> open,
-			ParsedTypeName args,
-			Token<TypeNameToken> close)
-		{
-			var arityStr = arity.Value.Substring(1);
-			if (int.TryParse(arityStr, out var arityValue))
-			{
-				qualifiedName.GenericArity = arityValue;
-			}
-			qualifiedName.GenericArguments.AddRange(args.GenericArguments);
-			return qualifiedName;
-		}
-
-		[Production("baseType: qualifiedName GenericArity")]
-		public ParsedTypeName BaseTypeGenericNoParams(
-			ParsedTypeName qualifiedName,
-			Token<TypeNameToken> arity)
-		{
-			var arityStr = arity.Value.Substring(1);
-			if (int.TryParse(arityStr, out var arityValue))
-			{
-				qualifiedName.GenericArity = arityValue;
-			}
-			return qualifiedName;
-		}
-
-		[Production("baseType: qualifiedName")]
-		public ParsedTypeName BaseTypeSimple(ParsedTypeName qualifiedName)
-		{
-			return qualifiedName;
-		}
-
-		// ==========================================
-		// genericArgs: generic type arguments
-		// ==========================================
-
-		[Production("genericArgs: genericArg Comma genericArgs")]
-		public ParsedTypeName GenericArgsCons(ParsedTypeName first, Token<TypeNameToken> comma, ParsedTypeName rest)
-		{
-			var result = new ParsedTypeName();
-			result.GenericArguments.Add(first);
-			result.GenericArguments.AddRange(rest.GenericArguments);
-			return result;
-		}
-
-		[Production("genericArgs: genericArg")]
-		public ParsedTypeName GenericArgsSingle(ParsedTypeName arg)
-		{
-			var result = new ParsedTypeName();
-			result.GenericArguments.Add(arg);
-			return result;
-		}
-
-		[Production("genericArg: OpenBracket typeSpec CloseBracket")]
-		public ParsedTypeName GenericArgBracketed(Token<TypeNameToken> open, ParsedTypeName type, Token<TypeNameToken> close)
-		{
-			return type;
-		}
-
-		[Production("genericArg: baseType")]
-		public ParsedTypeName GenericArgSimple(ParsedTypeName type)
-		{
-			return type;
-		}
-
-		// ==========================================
-		// assemblySpec: assembly name with optional properties
-		// ==========================================
-
-		[Production("assemblySpec: assemblyName Comma assemblyProps")]
-		public ParsedTypeName AssemblySpecWithProps(ParsedTypeName name, Token<TypeNameToken> comma, ParsedTypeName props)
-		{
-			var result = new ParsedTypeName();
-			result.AssemblyName = name.AssemblyName;
-			result.AssemblyProperties = props.AssemblyProperties;
-			return result;
-		}
-
-		[Production("assemblySpec: assemblyName")]
-		public ParsedTypeName AssemblySpecName(ParsedTypeName name)
-		{
-			return new ParsedTypeName { AssemblyName = name.AssemblyName };
-		}
-
-		// ==========================================
-		// assemblyName: assembly name parts joined by dots/dashes
-		// ==========================================
-
-		[Production("assemblyName: Identifier Dot assemblyName")]
-		public ParsedTypeName AssemblyNameDot(Token<TypeNameToken> first, Token<TypeNameToken> dot, ParsedTypeName rest)
-		{
-			return new ParsedTypeName { AssemblyName = first.Value + "." + rest.AssemblyName };
-		}
-
-		[Production("assemblyName: Identifier Dash assemblyName")]
-		public ParsedTypeName AssemblyNameDash(Token<TypeNameToken> first, Token<TypeNameToken> dash, ParsedTypeName rest)
-		{
-			return new ParsedTypeName { AssemblyName = first.Value + "-" + rest.AssemblyName };
-		}
-
-		[Production("assemblyName: Number Dot assemblyName")]
-		public ParsedTypeName AssemblyNameNumberDot(Token<TypeNameToken> first, Token<TypeNameToken> dot, ParsedTypeName rest)
-		{
-			return new ParsedTypeName { AssemblyName = first.Value + "." + rest.AssemblyName };
-		}
-
-		[Production("assemblyName: Number Dash assemblyName")]
-		public ParsedTypeName AssemblyNameNumberDash(Token<TypeNameToken> first, Token<TypeNameToken> dash, ParsedTypeName rest)
-		{
-			return new ParsedTypeName { AssemblyName = first.Value + "-" + rest.AssemblyName };
-		}
-
-		[Production("assemblyName: Identifier")]
-		public ParsedTypeName AssemblyNameIdentifier(Token<TypeNameToken> id)
-		{
-			return new ParsedTypeName { AssemblyName = id.Value };
-		}
-
-		[Production("assemblyName: Number")]
-		public ParsedTypeName AssemblyNameNumber(Token<TypeNameToken> num)
-		{
-			return new ParsedTypeName { AssemblyName = num.Value };
-		}
-
-		// ==========================================
-		// assemblyProps: assembly properties
-		// ==========================================
-
-		[Production("assemblyProps: assemblyProp Comma assemblyProps")]
-		public ParsedTypeName AssemblyPropsCons(ParsedTypeName prop, Token<TypeNameToken> comma, ParsedTypeName rest)
-		{
-			var result = new ParsedTypeName();
-			result.AssemblyProperties = rest.AssemblyProperties ?? new Dictionary<string, string>();
-			if (prop.AssemblyProperties != null)
-			{
-				foreach (var kv in prop.AssemblyProperties)
-				{
-					result.AssemblyProperties[kv.Key] = kv.Value;
-				}
-			}
-			return result;
-		}
-
-		[Production("assemblyProps: assemblyProp")]
-		public ParsedTypeName AssemblyPropsSingle(ParsedTypeName prop)
-		{
-			return prop;
-		}
-
-		[Production("assemblyProp: Identifier Equals propValue")]
-		public ParsedTypeName AssemblyProp(Token<TypeNameToken> name, Token<TypeNameToken> equals, ParsedTypeName value)
-		{
-			var result = new ParsedTypeName();
-			result.AssemblyProperties = new Dictionary<string, string>
-			{
-				{ name.Value, value.Namespace ?? string.Empty }
-			};
-			return result;
-		}
-
-		// ==========================================
-		// propValue: property value (identifier/number with dots)
-		// ==========================================
-
-		[Production("propValue: Identifier Dot propValue")]
-		public ParsedTypeName PropValueIdentifierDot(Token<TypeNameToken> first, Token<TypeNameToken> dot, ParsedTypeName rest)
-		{
-			return new ParsedTypeName { Namespace = first.Value + "." + rest.Namespace };
-		}
-
-		[Production("propValue: Number Dot propValue")]
-		public ParsedTypeName PropValueNumberDot(Token<TypeNameToken> first, Token<TypeNameToken> dot, ParsedTypeName rest)
-		{
-			return new ParsedTypeName { Namespace = first.Value + "." + rest.Namespace };
-		}
-
-		[Production("propValue: Number Identifier")]
-		public ParsedTypeName PropValueNumberIdentifier(Token<TypeNameToken> first, Token<TypeNameToken> id)
-		{
-			return new ParsedTypeName { Namespace = first.Value + id.Value };
-		}
-
-		[Production("propValue: NumberPrefixedIdentifier")]
-		public ParsedTypeName PropValueNumberPrefixedIdentifier(Token<TypeNameToken> id)
-		{
-			return new ParsedTypeName { Namespace = id.Value };
-		}
-
-		[Production("propValue: Identifier")]
-		public ParsedTypeName PropValueIdentifier(Token<TypeNameToken> id)
-		{
-			return new ParsedTypeName { Namespace = id.Value };
-		}
-
-		[Production("propValue: Number")]
-		public ParsedTypeName PropValueNumber(Token<TypeNameToken> num)
-		{
-			return new ParsedTypeName { Namespace = num.Value };
-		}
-
-		// ==========================================
-		// qualifiedName: namespace.type+nested
-		// ==========================================
-
-		[Production("qualifiedName: Identifier Dot qualifiedName")]
-		public ParsedTypeName QualifiedNameDot(Token<TypeNameToken> first, Token<TypeNameToken> dot, ParsedTypeName rest)
-		{
-			var result = new ParsedTypeName();
-
-			if (rest.TypeNames.Count > 0)
-			{
-				// rest has type names, first is namespace part
-				if (!string.IsNullOrEmpty(rest.Namespace))
-				{
-					result.Namespace = first.Value + "." + rest.Namespace;
-				}
-				else
-				{
-					result.Namespace = first.Value;
-				}
-				result.TypeNames.AddRange(rest.TypeNames);
-			}
-			else
-			{
-				// This shouldn't happen with proper grammar
-				result.TypeNames.Add(first.Value);
-			}
-
-			return result;
-		}
-
-		[Production("qualifiedName: Identifier Plus nestedTypes")]
-		public ParsedTypeName QualifiedNameNested(Token<TypeNameToken> first, Token<TypeNameToken> plus, ParsedTypeName nested)
-		{
-			var result = new ParsedTypeName();
-			result.TypeNames.Add(first.Value);
-			result.TypeNames.AddRange(nested.TypeNames);
-			return result;
-		}
-
-		[Production("qualifiedName: Identifier")]
-		public ParsedTypeName QualifiedNameSingle(Token<TypeNameToken> id)
-		{
-			var result = new ParsedTypeName();
-			result.TypeNames.Add(id.Value);
-			return result;
-		}
-
-		// ==========================================
-		// nestedTypes: nested type chain
-		// ==========================================
-
-		[Production("nestedTypes: Identifier Plus nestedTypes")]
-		public ParsedTypeName NestedTypesCons(Token<TypeNameToken> id, Token<TypeNameToken> plus, ParsedTypeName rest)
-		{
-			var result = new ParsedTypeName();
-			result.TypeNames.Add(id.Value);
-			result.TypeNames.AddRange(rest.TypeNames);
-			return result;
-		}
-
-		[Production("nestedTypes: Identifier")]
-		public ParsedTypeName NestedTypesSingle(Token<TypeNameToken> id)
-		{
-			var result = new ParsedTypeName();
-			result.TypeNames.Add(id.Value);
-			return result;
-		}
-	}
-
 	public struct ArrayRank
 	{
 		public int Rank;
@@ -675,38 +178,6 @@ internal class TypeNameParser
 		}
 	}
 
-	private Parser<TypeNameToken, ParsedTypeName>? _parser;
-
-	/// <summary>
-	/// Builds the parser instance
-	/// </summary>
-	public BuildResult<Parser<TypeNameToken, ParsedTypeName>> BuildParser()
-	{
-		var parserInstance = new TypeNameParserDefinition();
-		var builder = new ParserBuilder<TypeNameToken, ParsedTypeName>();
-		return builder.BuildParser(parserInstance, ParserType.LL_RECURSIVE_DESCENT, "typeSpec");
-	}
-
-	/// <summary>
-	/// Parses a .NET type name string
-	/// </summary>
-	/// <param name="typeName">The type name to parse</param>
-	/// <returns>The parsed result or null if parsing failed</returns>
-	public ParseResult<TypeNameToken, ParsedTypeName>? Parse(string typeName)
-	{
-		if (_parser == null)
-		{
-			var buildResult = BuildParser();
-			if (buildResult.IsError)
-			{
-				return null;
-			}
-			_parser = buildResult.Result;
-		}
-
-		return _parser.Parse(typeName);
-	}
-
 	/// <summary>
 	/// Tries to parse a .NET type name string
 	/// </summary>
@@ -716,12 +187,377 @@ internal class TypeNameParser
 	public bool TryParse(string typeName, [NotNullWhen(true)] out ParsedTypeName? result)
 	{
 		result = null;
-		var parseResult = Parse(typeName);
-		if (parseResult == null || parseResult.IsError)
+		if (string.IsNullOrEmpty(typeName))
 		{
 			return false;
 		}
-		result = parseResult.Result;
+
+		var scanner = new Scanner(typeName);
+		var parsed = scanner.ParseTypeSpec();
+		if (parsed is null)
+		{
+			return false;
+		}
+
+		// The whole input must be consumed; trailing characters mean the type name was malformed.
+		scanner.SkipWhitespace();
+		if (!scanner.Eof)
+		{
+			return false;
+		}
+
+		result = parsed;
 		return true;
+	}
+
+	/// <summary>
+	/// A recursive descent scanner over a single type name string.
+	/// A fresh instance is used per parse, so parsing is inherently reentrant and thread-safe.
+	/// </summary>
+	private sealed class Scanner
+	{
+		private readonly string _s;
+		private int _pos;
+
+		public Scanner(string s) => _s = s;
+
+		public bool Eof => _pos >= _s.Length;
+
+		private char Current => _s[_pos];
+
+		public void SkipWhitespace()
+		{
+			while (_pos < _s.Length && (_s[_pos] == ' ' || _s[_pos] == '\t'))
+			{
+				_pos++;
+			}
+		}
+
+		private bool Peek(char c)
+		{
+			SkipWhitespace();
+			return !Eof && Current == c;
+		}
+
+		private bool Consume(char c)
+		{
+			SkipWhitespace();
+			if (!Eof && Current == c)
+			{
+				_pos++;
+				return true;
+			}
+			return false;
+		}
+
+		// typeSpec := simpleTypeSpec ( ',' assemblySpec )? '&'?
+		public ParsedTypeName? ParseTypeSpec()
+		{
+			var type = ParseSimpleTypeSpec();
+			if (type is null)
+			{
+				return null;
+			}
+
+			if (Peek(','))
+			{
+				Consume(',');
+				var assembly = ParseAssemblySpec();
+				if (assembly is null)
+				{
+					return null;
+				}
+				type.AssemblyName = assembly.AssemblyName;
+				type.AssemblyProperties = assembly.AssemblyProperties;
+			}
+
+			if (Consume('&'))
+			{
+				type.IsReference = true;
+			}
+
+			return type;
+		}
+
+		// simpleTypeSpec := baseType '*'* arraySpec*
+		private ParsedTypeName? ParseSimpleTypeSpec()
+		{
+			var type = ParseBaseType();
+			if (type is null)
+			{
+				return null;
+			}
+
+			while (Peek('*'))
+			{
+				Consume('*');
+				type.PointerDepth++;
+			}
+
+			while (TryParseArraySpec(out var rank))
+			{
+				type.ArrayRanks.Add(rank);
+			}
+
+			return type;
+		}
+
+		// arraySpec := '[' ']' | '[' '*' ']' | '[' ','+ ']'
+		private bool TryParseArraySpec(out ArrayRank rank)
+		{
+			rank = default;
+			SkipWhitespace();
+			if (Eof || Current != '[')
+			{
+				return false;
+			}
+
+			var save = _pos;
+			_pos++; // consume '['
+
+			SkipWhitespace();
+			if (!Eof && Current == '*')
+			{
+				_pos++;
+				if (Consume(']'))
+				{
+					rank = new ArrayRank { Rank = 1, IsUnknownBound = true };
+					return true;
+				}
+				_pos = save;
+				return false;
+			}
+
+			var commas = 0;
+			while (Peek(','))
+			{
+				Consume(',');
+				commas++;
+			}
+
+			if (Consume(']'))
+			{
+				rank = new ArrayRank { Rank = commas + 1 };
+				return true;
+			}
+
+			_pos = save;
+			return false;
+		}
+
+		// baseType := qualifiedName ( '`' number ( genericArgs )? )?
+		private ParsedTypeName? ParseBaseType()
+		{
+			var type = ParseQualifiedName();
+			if (type is null)
+			{
+				return null;
+			}
+
+			SkipWhitespace();
+			if (!Eof && Current == '`')
+			{
+				_pos++; // consume '`'
+				var start = _pos;
+				while (!Eof && char.IsDigit(Current))
+				{
+					_pos++;
+				}
+				if (_pos == start)
+				{
+					return null; // '`' must be followed by the arity
+				}
+				type.GenericArity = int.Parse(_s.Substring(start, _pos - start));
+
+				if (IsGenericArgsAhead() && !ParseGenericArgs(type))
+				{
+					return null;
+				}
+			}
+
+			return type;
+		}
+
+		// A '[' following the arity marker starts the generic argument list only when it is not an array
+		// spec, i.e. when it is not immediately followed by ']', ',' or '*'.
+		private bool IsGenericArgsAhead()
+		{
+			SkipWhitespace();
+			if (Eof || Current != '[')
+			{
+				return false;
+			}
+
+			var i = _pos + 1;
+			while (i < _s.Length && (_s[i] == ' ' || _s[i] == '\t'))
+			{
+				i++;
+			}
+			if (i >= _s.Length)
+			{
+				return false;
+			}
+
+			var c = _s[i];
+			return c != ']' && c != ',' && c != '*';
+		}
+
+		// genericArgs := '[' genericArg ( ',' genericArg )* ']'
+		private bool ParseGenericArgs(ParsedTypeName type)
+		{
+			if (!Consume('['))
+			{
+				return false;
+			}
+
+			while (true)
+			{
+				var arg = ParseGenericArg();
+				if (arg is null)
+				{
+					return false;
+				}
+				type.GenericArguments.Add(arg);
+
+				if (Peek(','))
+				{
+					Consume(',');
+					continue;
+				}
+				break;
+			}
+
+			return Consume(']');
+		}
+
+		// genericArg := '[' typeSpec ']' | baseType
+		private ParsedTypeName? ParseGenericArg()
+		{
+			if (Peek('['))
+			{
+				Consume('[');
+				var inner = ParseTypeSpec();
+				if (inner is null || !Consume(']'))
+				{
+					return null;
+				}
+				return inner;
+			}
+
+			return ParseBaseType();
+		}
+
+		// qualifiedName := identifier ( '.' identifier )* ( '+' identifier )*
+		// The dotted segments before the last one form the namespace; the last dotted segment plus any
+		// '+'-separated segments form the (possibly nested) type name chain.
+		private ParsedTypeName? ParseQualifiedName()
+		{
+			var first = ParseIdentifier();
+			if (first is null)
+			{
+				return null;
+			}
+
+			var dotted = new List<string> { first };
+			while (Peek('.'))
+			{
+				Consume('.');
+				var next = ParseIdentifier();
+				if (next is null)
+				{
+					return null;
+				}
+				dotted.Add(next);
+			}
+
+			var nested = new List<string>();
+			while (Peek('+'))
+			{
+				Consume('+');
+				var next = ParseIdentifier();
+				if (next is null)
+				{
+					return null;
+				}
+				nested.Add(next);
+			}
+
+			var result = new ParsedTypeName();
+			if (dotted.Count > 1)
+			{
+				result.Namespace = string.Join(".", dotted.GetRange(0, dotted.Count - 1));
+			}
+			result.TypeNames.Add(dotted[dotted.Count - 1]);
+			result.TypeNames.AddRange(nested);
+			return result;
+		}
+
+		// identifier := [A-Za-z_][A-Za-z0-9_]*
+		private string? ParseIdentifier()
+		{
+			SkipWhitespace();
+			if (Eof)
+			{
+				return null;
+			}
+
+			var c = Current;
+			if (!(char.IsLetter(c) || c == '_'))
+			{
+				return null;
+			}
+
+			var start = _pos;
+			_pos++;
+			while (!Eof && (char.IsLetterOrDigit(Current) || Current == '_'))
+			{
+				_pos++;
+			}
+			return _s.Substring(start, _pos - start);
+		}
+
+		// assemblySpec := assemblyName ( ',' assemblyProp )*
+		// assemblyProp := key '=' value
+		// Stops at the enclosing ']' (nested generic argument), '&', or end of input.
+		private ParsedTypeName? ParseAssemblySpec()
+		{
+			var name = ReadAssemblySegment();
+			if (name.Length == 0)
+			{
+				return null;
+			}
+
+			var result = new ParsedTypeName { AssemblyName = name };
+
+			while (Peek(','))
+			{
+				Consume(',');
+				var segment = ReadAssemblySegment();
+				var eq = segment.IndexOf('=');
+				if (eq < 0)
+				{
+					continue; // not a key=value property; ignore
+				}
+				var key = segment.Substring(0, eq).Trim();
+				var value = segment.Substring(eq + 1).Trim();
+				result.AssemblyProperties ??= new Dictionary<string, string>();
+				result.AssemblyProperties[key] = value;
+			}
+
+			return result;
+		}
+
+		// Reads up to the next ',', ']', '&' or end of input. Assembly names and property values never
+		// contain these characters, so this is sufficient for the display-name grammar.
+		private string ReadAssemblySegment()
+		{
+			SkipWhitespace();
+			var start = _pos;
+			while (!Eof && Current != ',' && Current != ']' && Current != '&')
+			{
+				_pos++;
+			}
+			return _s.Substring(start, _pos - start).TrimEnd();
+		}
 	}
 }
