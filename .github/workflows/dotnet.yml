@@ -12,7 +12,12 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v3
@@ -20,9 +25,13 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+    # The cross-platform tests live in Aigamo.ResXGenerator.Tests (net8.0) and run on Linux.
+    # The only tests that require Windows are the System.Drawing (Icon/Bitmap) ones in
+    # Aigamo.ResXGenerator.Tests.Windows (net8.0-windows), which run on the Windows runner.
+    # Each OS runs only what it needs, so neither leg re-runs the other's tests.
+    - name: Test (Linux - cross-platform tests)
+      if: runner.os != 'Windows'
+      run: dotnet test Aigamo.ResXGenerator.Tests/Aigamo.ResXGenerator.Tests.csproj --verbosity normal
+    - name: Test (Windows - Drawing tests)
+      if: runner.os == 'Windows'
+      run: dotnet test Aigamo.ResXGenerator.Tests.Windows/Aigamo.ResXGenerator.Tests.Windows.csproj --verbosity normal
