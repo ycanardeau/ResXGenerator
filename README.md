@@ -88,6 +88,21 @@ public class MyViewModel(IArtistCategoriesNames resources) : IMyViewModel
 }
 ```
 
+## New in version 4.4
+
+-	Resources are no longer limited to strings. A resource with a `type` (for example `System.Drawing.Bitmap`, `System.Drawing.Icon`, or `System.Byte[]`), including [`ResXFileRef`](https://learn.microsoft.com/en-us/dotnet/api/system.resources.resxfileref) file references, now generates a strongly-typed member backed by `ResourceManager.GetObject`. String resources are unchanged.
+
+```cs
+/// <summary>
+/// Looks up a localized resource of type System.Drawing.Bitmap.
+/// </summary>
+public static System.Drawing.Bitmap? Logo => (System.Drawing.Bitmap)ResourceManager.GetObject(nameof(Logo), CultureInfo);
+```
+
+Non-string resources are only supported with the `ResourceManager` generation type. `StringLocalizer` and `CodeGeneration` remain string-only, and a non-string resource used with those modes reports a build diagnostic.
+
+-	Added support for the `LogicalName` and `ManifestResourceName` metadata on `EmbeddedResource` items, so resources whose manifest name is set explicitly are resolved with the correct name.
+
 ## Options
 
 <a name="GenerationType"></a>
