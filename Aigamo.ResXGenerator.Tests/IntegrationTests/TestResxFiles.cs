@@ -21,7 +21,7 @@ public class TestResxFiles
 		Test1.CreateDate.Should().Be("OldestDaDK");
 
 		// Test embedded files are as expected
-		Test1.TextFile.Should().Be("This is a test.\n");
+		Test1.TextFile.ReplaceLineEndings().Should().Be("This is a test.\n".ReplaceLineEndings());
 		Test1.BinaryFile.Should().BeEquivalentTo(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		Test1.TestIconAsBytes.Should().NotBeNull();
 		Test1.TestImageAsBytes.Should().NotBeNull();

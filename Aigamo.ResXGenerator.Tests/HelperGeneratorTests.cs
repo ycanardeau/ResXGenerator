@@ -46,7 +46,7 @@ public class HelperGeneratorTests
 			""";
 		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
 		result.FileName.Should().Be("Aigamo.ResXGenerator.1030_6.g.cs");
-		result.SourceCode.Should().Be(expected);
+		result.SourceCode.ReplaceLineEndings().Should().Be(expected.ReplaceLineEndings());
 	}
 	[Fact]
 	public void CanGenerateEmptyCombo()
@@ -75,6 +75,6 @@ public class HelperGeneratorTests
 			""";
 		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
 		result.FileName.Should().Be("Aigamo.ResXGenerator..g.cs");
-		result.SourceCode.Should().Be(expected);
+		result.SourceCode.ReplaceLineEndings().Should().Be(expected.ReplaceLineEndings());
 	}
 }
