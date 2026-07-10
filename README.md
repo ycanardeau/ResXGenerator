@@ -631,6 +631,14 @@ For resources that contain format placeholders such as `{0}` or `{1}`, you can o
 </ItemGroup>
 ```
 
+```xml
+<ItemGroup>
+ <EmbeddedResource Update="Resources\Messages.resx">
+  <GenerateFormatMethods>true</GenerateFormatMethods>
+ </EmbeddedResource>
+</ItemGroup>
+```
+
 With this enabled, a resource like:
 
 ```xml
@@ -639,10 +647,9 @@ With this enabled, a resource like:
 </data>
 ```
 
-will generate both of these members:
+will generate:
 
 ```csharp
-public string HiUser => stringLocalizer["HiUser"];
 public string HiUser(object arg0) => stringLocalizer["HiUser", arg0];
 ```
 

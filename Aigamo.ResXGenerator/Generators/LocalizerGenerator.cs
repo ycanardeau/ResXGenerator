@@ -57,33 +57,35 @@ public sealed class LocalizerGenerator : GeneratorBase<GenFileOptions>, IResXGen
 			return $"// Skipped invalid member name: {fallbackItem.Key}";
 
 		var parameters = GetFormatParameters(fallbackItem.Value);
-		if (parameters.Length == 0 || !Options.GenerateFormatMethods)
-			return $"public string {fallbackItem.Key} => stringLocalizer[\"{fallbackItem.Key}\"];";
+		if (parameters.Length > 0 && Options.GenerateFormatMethods)
+		{
+			return $$"""
+				public string {{fallbackItem.Key}}({{string.Join(", ", parameters.Select(p => $"object {p}"))}}) => stringLocalizer["{{fallbackItem.Key}}", {{string.Join(", ", parameters)}}];
+				""";
+		}
 
-		return $$"""
-		public string {{fallbackItem.Key}} => stringLocalizer["{{fallbackItem.Key}}"];
-		public string {{fallbackItem.Key}}({{string.Join(", ", parameters.Select(p => $"object {p}"))}}) => stringLocalizer["{{fallbackItem.Key}}", {{string.Join(", ", parameters)}}];
-		""";
+		return $"public string {fallbackItem.Key} => stringLocalizer[\"{fallbackItem.Key}\"];";
 	}
 
 	private string GenerateInterfaceMembers(FallBackItem fallbackItem)
 	{
 		var parameters = GetFormatParameters(fallbackItem.Value);
-		if (parameters.Length == 0 || !Options.GenerateFormatMethods)
+		if (parameters.Length > 0 && Options.GenerateFormatMethods)
+		{
 			return $$"""
-		/// <summary>
-		/// Looks up a localized string similar to {{fallbackItem.Value.ToXmlCommentSafe()}}.
-		/// </summary>
-		string {{fallbackItem.Key}} {get;}
-		""";
+				/// <summary>
+				/// Looks up a localized string similar to {{fallbackItem.Value.ToXmlCommentSafe()}}.
+				/// </summary>
+				string {{fallbackItem.Key}}({{string.Join(", ", parameters.Select(p => $"object {p}"))}});
+				""";
+		}
 
 		return $$"""
-		/// <summary>d
-		/// Looks up a localized string similar to {{fallbackItem.Value.ToXmlCommentSafe()}}.
-		/// </summary>
-		string {{fallbackItem.Key}} {get;}
-		string {{fallbackItem.Key}}({{string.Join(", ", parameters.Select(p => $"object {p}"))}});
-		""";
+			/// <summary>
+			/// Looks up a localized string similar to {{fallbackItem.Value.ToXmlCommentSafe()}}.
+			/// </summary>
+			string {{fallbackItem.Key}} {get;}
+			""";
 	}
 
 	private static string[] GetFormatParameters(string value)

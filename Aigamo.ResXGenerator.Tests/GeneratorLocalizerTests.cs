@@ -151,13 +151,13 @@ public class GeneratorLocalizerTests
 		);
 
 		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
-		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Greeting => stringLocalizer[\"Greeting\"];");
+		result.SourceCode.ReplaceLineEndings().Should().NotContain("public string Greeting => stringLocalizer[\"Greeting\"];");
 		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Greeting(object arg0) => stringLocalizer[\"Greeting\", arg0];");
-		result.SourceCode.ReplaceLineEndings().Should().Contain("public string MultiGreeting => stringLocalizer[\"MultiGreeting\"];");
+		result.SourceCode.ReplaceLineEndings().Should().NotContain("public string MultiGreeting => stringLocalizer[\"MultiGreeting\"];");
 		result.SourceCode.ReplaceLineEndings().Should().Contain("public string MultiGreeting(object arg0, object arg1) => stringLocalizer[\"MultiGreeting\", arg0, arg1];");
-		result.SourceCode.ReplaceLineEndings().Should().Contain("string Greeting {get;}");
+		result.SourceCode.ReplaceLineEndings().Should().NotContain("string Greeting {get;}");
 		result.SourceCode.ReplaceLineEndings().Should().Contain("string Greeting(object arg0);");
-		result.SourceCode.ReplaceLineEndings().Should().Contain("string MultiGreeting {get;}");
+		result.SourceCode.ReplaceLineEndings().Should().NotContain("string MultiGreeting {get;}");
 		result.SourceCode.ReplaceLineEndings().Should().Contain("string MultiGreeting(object arg0, object arg1);");
 	}
 
