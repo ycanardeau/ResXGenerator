@@ -15,5 +15,6 @@
 |GenerateCode*|ResXGenerator_GenerateCode|- true<br>- **false**|All except StringLocalizer|
 |CustomToolNamespace|ResXGenerator_CustomToolNamespace|Any valid C# namespace|All except StringLocalizer|
 |SkipFile| |- true<br>- **false**|All|
+|GenerateFormatMethods|ResXGenerator_GenerateFormatMethods|- true<br>- **false**|StringLocalizer|
 
 \* *Could be replaced by the option GenerationType with the value CodeGeneration*

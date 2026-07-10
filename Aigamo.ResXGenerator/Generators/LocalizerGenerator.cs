@@ -1,4 +1,5 @@
-﻿using Aigamo.ResXGenerator.Extensions;
+﻿using System.Text.RegularExpressions;
+using Aigamo.ResXGenerator.Extensions;
 using Aigamo.ResXGenerator.Models;
 using Aigamo.ResXGenerator.Tools;
 
@@ -50,15 +51,50 @@ public sealed class LocalizerGenerator : GeneratorBase<GenFileOptions>, IResXGen
 				""";
 	}
 
-	private string GenerateMembers(FallBackItem fallbackItem) => !Validator.ValidateMember(fallbackItem, Options) ?
-		$"// Skipped invalid member name: {fallbackItem.Key}" :
-		$"public string {fallbackItem.Key} => stringLocalizer[\"{fallbackItem.Key}\"];";
+	private string GenerateMembers(FallBackItem fallbackItem)
+	{
+		if (!Validator.ValidateMember(fallbackItem, Options))
+			return $"// Skipped invalid member name: {fallbackItem.Key}";
 
-	private static string GenerateInterfaceMembers(FallBackItem fallbackItem) =>
-		$$"""
-		/// <summary>
-		/// Looks up a localized string similar to {{fallbackItem.Value.ToXmlCommentSafe()}}.
-		/// </summary>
-		string {{fallbackItem.Key}} {get;}
-		""";
+		var parameters = GetFormatParameters(fallbackItem.Value);
+		if (parameters.Length > 0 && Options.GenerateFormatMethods)
+		{
+			return $$"""
+				public string {{fallbackItem.Key}}({{string.Join(", ", parameters.Select(p => $"object {p}"))}}) => stringLocalizer["{{fallbackItem.Key}}", {{string.Join(", ", parameters)}}];
+				""";
+		}
+
+		return $"public string {fallbackItem.Key} => stringLocalizer[\"{fallbackItem.Key}\"];";
+	}
+
+	private string GenerateInterfaceMembers(FallBackItem fallbackItem)
+	{
+		var parameters = GetFormatParameters(fallbackItem.Value);
+		if (parameters.Length > 0 && Options.GenerateFormatMethods)
+		{
+			return $$"""
+				/// <summary>
+				/// Looks up a localized string similar to {{fallbackItem.Value.ToXmlCommentSafe()}}.
+				/// </summary>
+				string {{fallbackItem.Key}}({{string.Join(", ", parameters.Select(p => $"object {p}"))}});
+				""";
+		}
+
+		return $$"""
+			/// <summary>
+			/// Looks up a localized string similar to {{fallbackItem.Value.ToXmlCommentSafe()}}.
+			/// </summary>
+			string {{fallbackItem.Key}} {get;}
+			""";
+	}
+
+	private static string[] GetFormatParameters(string value)
+	{
+		var placeholders = Regex.Matches(value, "\\{(\\d+)\\}");
+		return [.. placeholders.Cast<Match>()
+			.Select(match => int.Parse(match.Groups[1].Value))
+			.Distinct()
+			.OrderBy(index => index)
+			.Select(index => $"arg{index}")];
+	}
 }
