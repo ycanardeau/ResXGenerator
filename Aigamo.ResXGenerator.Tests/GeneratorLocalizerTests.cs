@@ -1,5 +1,6 @@
 ﻿using Aigamo.ResXGenerator.Extensions;
 using Aigamo.ResXGenerator.Generators;
+using Aigamo.ResXGenerator.Models;
 using Aigamo.ResXGenerator.Tools;
 using FluentAssertions;
 using Microsoft.CodeAnalysis;
@@ -160,6 +161,64 @@ public class GeneratorLocalizerTests
 		result.SourceCode.ReplaceLineEndings().Should().NotContain("string MultiGreeting {get;}");
 		result.SourceCode.ReplaceLineEndings().Should().Contain("string MultiGreeting(object arg0, object arg1);");
 	}
+
+	[Fact]
+	public void Generate_Localizer_FormatItemsWithAlignmentOrFormat_GenerateMethodWithParameters_WhenEnabled()
+	{
+		const string text =
+			"""
+			<?xml version="1.0" encoding="utf-8"?>
+			<root>
+				<data name="Seen" xml:space="preserve">
+					<value>First seen {0:g}, last seen {1,-10:d}</value>
+				</data>
+				<data name="Escaped" xml:space="preserve">
+					<value>Write {{0}} for the first value</value>
+				</data>
+			</root>
+			""";
+
+		var result = GenerateWithFormatMethods(text);
+
+		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Seen(object arg0, object arg1) => stringLocalizer[\"Seen\", arg0, arg1];");
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Escaped => stringLocalizer[\"Escaped\"];");
+	}
+
+	[Fact]
+	public void Generate_Localizer_FormatItemsWithAGap_GenerateEveryParameterUpToTheHighest_WhenEnabled()
+	{
+		const string text =
+			"""
+			<?xml version="1.0" encoding="utf-8"?>
+			<root>
+				<data name="Second" xml:space="preserve">
+					<value>Only the second: {1}</value>
+				</data>
+			</root>
+			""";
+
+		var result = GenerateWithFormatMethods(text);
+
+		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Second(object arg0, object arg1) => stringLocalizer[\"Second\", arg0, arg1];");
+	}
+
+	private static GeneratedOutput GenerateWithFormatMethods(string text) =>
+		new LocalizerGenerator().Generate(
+			options: new GenFileOptions
+			{
+				LocalNamespace = "VocaDb.Web.App_GlobalResources",
+				EmbeddedFilename = "VocaDb.Web.App_GlobalResources.CommonMessages",
+				GroupedFile = new GroupedAdditionalFile(
+					mainFile: new AdditionalTextWithHash(new AdditionalTextStub("", text), Guid.NewGuid()),
+					subFiles: []
+				),
+				GenerationType = GenerationType.StringLocalizer,
+				ClassName = "CommonMessages",
+				GenerateFormatMethods = true
+			}
+		);
 
 	[Fact]
 	public void Generate_Localizer_NewLine()
