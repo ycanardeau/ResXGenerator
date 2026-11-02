@@ -44,10 +44,7 @@ public static class GroupResxFiles
 		});
 	}
 
-	public static IEnumerable<CultureInfoCombo> DetectChildCombos(IReadOnlyList<GroupedAdditionalFile> groupedAdditionalFiles)
-	{
-		return groupedAdditionalFiles
+	public static IEnumerable<CultureInfoCombo> DetectChildCombos(IReadOnlyList<GroupedAdditionalFile> groupedAdditionalFiles) => groupedAdditionalFiles
 			.Select(x => new CultureInfoCombo(x.SubFiles))
 			.Distinct().ToList();
-	}
 }

@@ -50,6 +50,12 @@ public class StringBuilderGeneratorHelper
 			validator.ValidateInconsistentModificator(options);
 
 			Builder.Append(Indent);
+			Builder.AppendLineLF("///<summary>");
+			Builder.Append(Indent);
+			Builder.AppendLineLF($"///Ressource class for {ContainerClassName}");
+			Builder.Append(Indent);
+			Builder.AppendLineLF("///</summary>");
+			Builder.Append(Indent);
 			Builder.Append("public ");
 			Builder.Append(ContainerClassName);
 			Builder.Append(" ");
@@ -58,6 +64,14 @@ public class StringBuilderGeneratorHelper
 			Builder.AppendLineLF();
 		}
 
+		Builder.Append(Indent);
+		Builder.AppendLineLF("///<summary>");
+		Builder.Append(Indent);
+		Builder.AppendLineLF($"///Ressource class for {ContainerClassName}");
+		Builder.Append(Indent);
+		Builder.AppendLineLF("///</summary>");
+		Builder.Append(Indent);
+		Builder.AppendLineLF(Constants.GeneratedCodeAttribute);
 		Builder.Append(Indent);
 		Builder.Append(GetInnerClassVisibility(options));
 		Builder.Append(options.StaticClass ? " static" : string.Empty);
@@ -72,6 +86,10 @@ public class StringBuilderGeneratorHelper
 
 	public void AppendClassHeader(GenFileOptions options)
 	{
+		Builder.AppendLineLF("///<summary>");
+		Builder.AppendLineLF($"///Ressource class for {ContainerClassName}");
+		Builder.AppendLineLF("///</summary>");
+		Builder.AppendLineLF(Constants.GeneratedCodeAttribute);
 		Builder.Append(options.PublicClass ? "public" : "internal");
 		Builder.Append(options.StaticClass ? " static" : string.Empty);
 		Builder.Append(options.PartialClass ? " partial class " : " class ");
@@ -89,20 +107,7 @@ public class StringBuilderGeneratorHelper
 
 	internal (bool valid, bool resourceAccessByName, TypeNameParser.ParsedTypeName? typeName) GenerateMember(FallBackItem fallbackItem, GenFileOptions options, IntegrityValidator validator)
 	{
-		string memberName;
-		bool resourceAccessByName;
-
-		if (RegexDefinitions.ValidMemberNamePattern.IsMatch(fallbackItem.Key))
-		{
-			memberName = fallbackItem.Key;
-			resourceAccessByName = true;
-		}
-		else
-		{
-			memberName = RegexDefinitions.InvalidMemberNameSymbols.Replace(fallbackItem.Key, "_");
-			resourceAccessByName = false;
-		}
-
+		var (memberName, resourceAccessByName) = fallbackItem.Key.ToValidMemberName();
 
 		if (!validator.ValidateMember(fallbackItem, options, ContainerClassName)) return (false, resourceAccessByName, null);
 
@@ -112,7 +117,7 @@ public class StringBuilderGeneratorHelper
 		switch (typeNameResult.typeName)
 		{
 			case null:
-			case { FullName: "System.String"}:
+			case { FullName: "System.String" }:
 				GenerateValidatedMemberAsString(fallbackItem, options, memberName);
 				break;
 			case { FullName: "System.Resources.ResXFileRef" }:
@@ -132,7 +137,8 @@ public class StringBuilderGeneratorHelper
 				GenerateValidatedMemberAsAnyType(fallbackItem, options, memberName, typeNameResult.typeName);
 
 				break;
-		};
+		}
+		;
 
 		return (true, resourceAccessByName, typeNameResult.typeName);
 	}
@@ -195,11 +201,16 @@ public class StringBuilderGeneratorHelper
 		Builder.Append(Constants.SystemResources);
 		Builder.AppendLineLF(";");
 
+		Builder.Append("using ");
+		Builder.Append(Constants.SystemCodeDomCompiler);
+		Builder.AppendLineLF(";");
+
 		Builder.AppendLineLF();
 	}
 
 	public void AppendCodeUsings()
 	{
+		Builder.AppendLineLF($"using {Constants.SystemCodeDomCompiler};");
 		Builder.AppendLineLF("using static Aigamo.ResXGenerator.Helpers;");
 		Builder.AppendLineLF();
 	}
@@ -213,6 +224,8 @@ public class StringBuilderGeneratorHelper
 		Builder.Append(Constants.SResourceManagerVariable);
 		Builder.AppendLineLF(";");
 
+		Builder.Append(Indent);
+		Builder.AppendLineLF("///<summary />");
 		Builder.Append(Indent);
 		Builder.Append("public static ");
 		Builder.Append(nameof(ResourceManager));
@@ -228,6 +241,8 @@ public class StringBuilderGeneratorHelper
 		Builder.Append(ContainerClassName);
 		Builder.AppendLineLF(").Assembly);");
 
+		Builder.Append(Indent);
+		Builder.AppendLineLF("///<summary />");
 		Builder.Append(Indent);
 		Builder.Append("public ");
 		Builder.Append(options.StaticMembers ? "static " : string.Empty);

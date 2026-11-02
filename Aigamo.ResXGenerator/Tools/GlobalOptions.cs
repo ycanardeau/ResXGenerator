@@ -54,14 +54,25 @@ public sealed record GlobalOptions // this must be a record or implement IEquata
 			nullForgivingOperatorsSwitch is { Length: > 0 } &&
 			nullForgivingOperatorsSwitch.Equals("true", StringComparison.OrdinalIgnoreCase);
 
-		StaticClass =
+		GenerationType = GenerationType.ResourceManager;
+		if (
+			options.TryGetValue("build_property.ResXGenerator_GenerationType", out var generationTypeSwitch) &&
+			Enum.TryParse(generationTypeSwitch, true, out GenerationType g)
+		)
+		{
+			GenerationType = g;
+		}
+
+		// If GenerationType is StringLocalizer, then StaticClass must be false
+		StaticClass = GenerationType != GenerationType.StringLocalizer &&
 			!(
 				options.TryGetValue("build_property.ResXGenerator_StaticClass", out var staticClassSwitch) &&
 				staticClassSwitch is { Length: > 0 } &&
 				staticClassSwitch.Equals("false", StringComparison.OrdinalIgnoreCase)
 			);
 
-		StaticMembers =
+		// If GenerationType is StringLocalizer, then StaticMembers must be false
+		StaticMembers = GenerationType != GenerationType.StringLocalizer &&
 			!(
 				options.TryGetValue("build_property.ResXGenerator_StaticMembers", out var staticMembersSwitch) &&
 				staticMembersSwitch is { Length: > 0 } &&
@@ -104,15 +115,6 @@ public sealed record GlobalOptions // this must be a record or implement IEquata
 			options.TryGetValue("build_property.ResXGenerator_GenerateCode", out var genCodeSwitch) &&
 			genCodeSwitch is { Length: > 0 } &&
 			genCodeSwitch.Equals("true", StringComparison.OrdinalIgnoreCase);
-
-		GenerationType = GenerationType.ResourceManager;
-		if (
-			options.TryGetValue("build_property.ResXGenerator_GenerationType", out var generationTypeSwitch) &&
-			Enum.TryParse(generationTypeSwitch, true, out GenerationType g)
-		)
-		{
-			GenerationType = g;
-		}
 	}
 
 	public static GlobalOptions Select(AnalyzerConfigOptionsProvider provider, CancellationToken token)

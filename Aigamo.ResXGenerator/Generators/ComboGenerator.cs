@@ -8,8 +8,8 @@ namespace Aigamo.ResXGenerator.Generators;
 public sealed class ComboGenerator : GeneratorBase<CultureInfoCombo>, IComboGenerator
 {
 	private const string OutputStringFilenameFormat = "Aigamo.ResXGenerator.{0}.g.cs";
-	private static readonly Dictionary<int, List<int>> s_allChildren = new();
-	private StringBuilderGeneratorHelper Helper { get; set; }
+	private static readonly Dictionary<int, List<int>> s_allChildren = [];
+	private StringBuilderGeneratorHelper Helper { get; set; } = default!;
 
 	/// <summary>
 	/// Build all CultureInfo children
@@ -39,9 +39,19 @@ public sealed class ComboGenerator : GeneratorBase<CultureInfoCombo>, IComboGene
 
 		Helper.AppendHeader("Aigamo.ResXGenerator");
 
+		Helper.AppendLineLF($"using {Constants.SystemCodeDomCompiler};");
+
+		Helper.AppendLineLF("");
+		Helper.AppendLineLF("///<summary>");
+		Helper.AppendLineLF("///Helpers for localized strings");
+		Helper.AppendLineLF("///</summary>");
+		Helper.AppendLineLF(Constants.GeneratedCodeAttribute);
 		Helper.AppendLineLF("internal static partial class Helpers");
 		Helper.AppendLineLF("{");
 
+		Helper.AppendLineLF("\t///<summary>");
+		Helper.AppendLineLF("\t///Gets a localized string");
+		Helper.AppendLineLF("\t///</summary>");
 		Helper.Append("\tpublic static string GetString_");
 		var functionNamePostFix = Helper.AppendLanguages(definedLanguages);
 		Helper.Append("(string fallback");

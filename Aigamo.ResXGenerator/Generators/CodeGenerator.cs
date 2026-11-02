@@ -8,7 +8,7 @@ namespace Aigamo.ResXGenerator.Generators;
 
 public sealed class CodeGenerator : GeneratorBase<GenFileOptions>, IResXGenerator
 {
-	private StringBuilderGeneratorHelper Helper { get; set; }
+	private StringBuilderGeneratorHelper Helper { get; set; } = default!;
 
 	public override GeneratedOutput Generate(GenFileOptions options, CancellationToken cancellationToken = default)
 	{
@@ -16,13 +16,14 @@ public sealed class CodeGenerator : GeneratorBase<GenFileOptions>, IResXGenerato
 
 		Helper = new StringBuilderGeneratorHelper(Options);
 
-		Content = Options.GroupedFile.MainFile.File.GetText(cancellationToken);
-		if (Content is null)
+		if (Options.GroupedFile.MainFile.File.GetText(cancellationToken) is not { } content)
 		{
 			GeneratedFileName = Options.GroupedFile.MainFile.File.Path;
 			Helper.Append("//ERROR reading file:");
 			return Helper.GetOutput(GeneratedFileName, Validator);
 		}
+
+		Content = content;
 
 		GeneratedFileName = $"{Options.LocalNamespace}.{Options.ClassName}.g.cs";
 

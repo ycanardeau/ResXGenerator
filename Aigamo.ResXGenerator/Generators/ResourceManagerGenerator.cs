@@ -6,7 +6,7 @@ namespace Aigamo.ResXGenerator.Generators;
 
 public sealed class ResourceManagerGenerator : GeneratorBase<GenFileOptions>, IResXGenerator
 {
-	private StringBuilderGeneratorHelper Helper { get; set; }
+	private StringBuilderGeneratorHelper Helper { get; set; } = default!;
 
 	public override GeneratedOutput Generate(GenFileOptions options, CancellationToken cancellationToken = default)
 	{
@@ -20,6 +20,7 @@ public sealed class ResourceManagerGenerator : GeneratorBase<GenFileOptions>, IR
 			Helper.Append("//ERROR reading file:");
 			return Helper.GetOutput(GeneratedFileName, Validator);
 		}
+
 		Content = content;
 
 		GeneratedFileName = $"{Options.LocalNamespace}.{Options.ClassName}.g.cs";
@@ -38,7 +39,7 @@ public sealed class ResourceManagerGenerator : GeneratorBase<GenFileOptions>, IR
 	{
 		Helper.GenerateResourceManagerMembers(Options);
 
-		var members = ReadResxFile(Content!);
+		var members = ReadResxFile(Content);
 
 		members?.ForEach(fbi =>
 		{
@@ -73,6 +74,7 @@ public sealed class ResourceManagerGenerator : GeneratorBase<GenFileOptions>, IR
 			default:
 				Helper.Append(" => (");
 				Helper.Append(typeName.ToCSharp());
+				Helper.Append(Options.NullForgivingOperators ? string.Empty : "?");
 				Helper.Append(")");
 
 				if (resourceAccessByName)

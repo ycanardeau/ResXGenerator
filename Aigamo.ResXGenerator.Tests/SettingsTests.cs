@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Aigamo.ResXGenerator.Tools;
+﻿using Aigamo.ResXGenerator.Tools;
 using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -67,7 +66,7 @@ public class SettingsTests
 				},
 				fileOptions: null!
 			),
-			token: default
+			TestContext.Current.CancellationToken
 		);
 		globalOptions.RootNamespace.Should().Be("namespace1");
 		globalOptions.ProjectFullPath.Should().Be("project1.csproj");
@@ -132,7 +131,7 @@ public class SettingsTests
 	public void FileSettings_RespectsEmptyRootNamespace(
 		string msBuildProjectFullPath,
 		string mainFile,
-		string rootNamespace,
+		string? rootNamespace,
 		string expectedLocalNamespace,
 		string expectedEmbeddedFilename
 	)
@@ -156,7 +155,7 @@ public class SettingsTests
 					},
 					fileOptions: null!
 				),
-				token: default
+				TestContext.Current.CancellationToken
 			)
 		);
 		fileOptions.InnerClassName.Should().BeNullOrEmpty();
@@ -263,7 +262,7 @@ public class SettingsTests
 				},
 				fileOptions: null!
 			),
-			token: default
+			TestContext.Current.CancellationToken
 		);
 		var fileOptions = GenFileOptions.Select(
 			file: new GroupedAdditionalFile(
@@ -355,7 +354,7 @@ public class SettingsTests
 				 },
 				 fileOptions: null!
 			 ),
-			 token: default
+			 TestContext.Current.CancellationToken
 		 );
 
 		globalOptions.RootNamespace.Should().Be("namespace1");
@@ -363,6 +362,54 @@ public class SettingsTests
 		globalOptions.IsValid.Should().Be(true);
 	}
 
+	[Fact]
+	public void GlobalOptions_StringLocalizerMustIgnoreStaticOptions()
+	{
+		var globalOptions = GlobalOptions.Select(
+			 provider: new AnalyzerConfigOptionsProviderStub(
+				 globalOptions: new AnalyzerConfigOptionsStub
+				 {
+					 RootNamespace = "namespace1",
+					 MSBuildProjectFullPath = "project1.csproj",
+					 MSBuildProjectName = "project1",
+					 ResXGenerator_GenerationType = "StringLocalizer",
+					 ResXGenerator_StaticClass = "true",
+					 ResXGenerator_StaticMembers = "true"
+				 },
+				 fileOptions: null!
+			 ),
+			 TestContext.Current.CancellationToken
+		 );
+
+		globalOptions.RootNamespace.Should().Be("namespace1");
+		globalOptions.GenerationType.Should().Be(GenerationType.StringLocalizer);
+		globalOptions.IsValid.Should().Be(true);
+		globalOptions.StaticClass.Should().Be(false);
+		globalOptions.StaticMembers.Should().Be(false);
+	}
+
+	[Fact]
+	public void TargetPath_IsUsedForLocalNamespace()
+	{
+		var fileOptions = GenFileOptions.Select(
+			file: new GroupedAdditionalFile(
+				mainFile: new AdditionalTextWithHash(new AdditionalTextStub("Path1.resx"), Guid.NewGuid()),
+				subFiles: []
+			),
+			options: new AnalyzerConfigOptionsProviderStub(
+				globalOptions: null!,
+				fileOptions: new AnalyzerConfigOptionsStub
+				{
+					TargetPath = "Resources\\Strings.resx"
+				}
+			),
+			globalOptions: s_globalOptions
+		);
+
+		_ = fileOptions.LocalNamespace.Should().Be("namespace1.Resources");
+		_ = fileOptions.ClassName.Should().Be("Strings");
+		_ = fileOptions.IsValid.Should().Be(true);
+	}
 
 	private class AnalyzerConfigOptionsStub : AnalyzerConfigOptions
 	{

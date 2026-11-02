@@ -31,7 +31,10 @@ public readonly record struct GenFileOptions
 		GroupedFile = groupedFile;
 		var resxFilePath = groupedFile.MainFile.File.Path;
 
-		var classNameFromFileName = Utilities.GetClassNameFromPath(resxFilePath);
+		var hasTargetPath = options.TryGetValue("build_metadata.EmbeddedResource.TargetPath", out var targetPath) &&
+			targetPath is { Length: > 0 };
+
+		var classNameFromFileName = Utilities.GetClassNameFromPath(hasTargetPath ? targetPath! : resxFilePath);
 
 		var detectedNamespace = Utilities.GetLocalNamespace(
 			resxFilePath,
@@ -59,8 +62,7 @@ public readonly record struct GenFileOptions
 		EmbeddedFilename = logicalNameMetadata ?? manifestResourceNameMetadata ?? (string.IsNullOrEmpty(detectedNamespace) ? classNameFromFileName : $"{detectedNamespace}.{classNameFromFileName}");
 
 		LocalNamespace =
-			options.TryGetValue("build_metadata.EmbeddedResource.TargetPath", out var targetPath) &&
-			targetPath is { Length: > 0 }
+			hasTargetPath
 				? Utilities.GetLocalNamespace(
 					resxFilePath, targetPath,
 					globalOptions.ProjectFullPath,
@@ -166,16 +168,10 @@ public readonly record struct GenFileOptions
 		IsValid = globalOptions.IsValid;
 	}
 
-	public static GenFileOptions Select(
-		GroupedAdditionalFile file,
-		AnalyzerConfigOptionsProvider options,
-		GlobalOptions globalOptions
-	)
-	{
-		return new GenFileOptions(
+	public static GenFileOptions Select(GroupedAdditionalFile file, AnalyzerConfigOptionsProvider options, GlobalOptions globalOptions) =>
+		new(
 			groupedFile: file,
 			options: options.GetOptions(file.MainFile.File),
 			globalOptions: globalOptions
 		);
-	}
 }

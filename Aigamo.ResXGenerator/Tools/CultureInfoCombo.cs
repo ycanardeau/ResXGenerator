@@ -10,14 +10,11 @@ namespace Aigamo.ResXGenerator;
 public readonly record struct CultureInfoCombo
 {
 	// order by length desc, so that da-DK comes before da, meaning that it HashSet<int> already doesn't contain da-DK when we process it
-	public CultureInfoCombo(IReadOnlyList<AdditionalTextWithHash>? files)
-	{
-		CultureInfos = files?
+	public CultureInfoCombo(IReadOnlyList<AdditionalTextWithHash>? files) => CultureInfos = files?
 			.Select(x => (Path.GetExtension(Path.GetFileNameWithoutExtension(x.File.Path)).TrimStart('.'), y: x))
 			.OrderByDescending(x => x.Item1.Length)
 			.ThenBy(y => y.Item1)
 			.ToList() ?? [];
-	}
 
 	public IReadOnlyList<(string Iso, AdditionalTextWithHash File)> CultureInfos { get; }
 
