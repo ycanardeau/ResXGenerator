@@ -393,7 +393,7 @@ public class SettingsTests
 	{
 		var fileOptions = GenFileOptions.Select(
 			file: new GroupedAdditionalFile(
-				mainFile: new AdditionalTextWithHash(new AdditionalTextStub("Other/Strings.resx"), Guid.NewGuid()),
+				mainFile: new AdditionalTextWithHash(new AdditionalTextStub("Path1.resx"), Guid.NewGuid()),
 				subFiles: []
 			),
 			options: new AnalyzerConfigOptionsProviderStub(
