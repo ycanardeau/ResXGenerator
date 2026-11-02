@@ -1,5 +1,4 @@
-﻿using System.Web;
-using Aigamo.ResXGenerator.Tools;
+﻿using Aigamo.ResXGenerator.Tools;
 
 namespace Aigamo.ResXGenerator.Extensions;
 
@@ -10,7 +9,7 @@ internal static class StringExtensions
 	public static string ToXmlCommentSafe(this string input) => input.ToXmlCommentSafe(string.Empty);
 	public static string ToXmlCommentSafe(this string input, string indent)
 	{
-		var lines = HttpUtility.HtmlEncode(input.Trim()).GetCodeLines();
+		var lines = input.Trim().XmlEscape().GetCodeLines();
 		return string.Join($"{Constants.NewLine}{indent}/// ", lines);
 	}
 	public static string Indent(this string input, int level = 1)
@@ -25,4 +24,5 @@ internal static class StringExtensions
 		RegexDefinitions.NewLine.Replace(input, newLine);
 	public static (string memberName, bool resourceAccessByName) ToValidMemberName(this string input) =>
 		RegexDefinitions.ValidMemberNamePattern.IsMatch(input) ? (input, true) : (RegexDefinitions.InvalidMemberNameSymbols.Replace(input, "_"), false);
+	public static string XmlEscape(this string input) => input.Replace("<", "&lt;").Replace(">", "&gt;");
 }

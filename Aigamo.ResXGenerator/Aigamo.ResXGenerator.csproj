@@ -5,15 +5,20 @@
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Version>4.4.2-beta</Version>
+		<Title>Aigamo.ResXGenerator</Title>
 		<Authors>VocaDB, Aigamo</Authors>
+		<Copyright>Copyright © VocaDB, Aigamo</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/ycanardeau/ResXGenerator</PackageProjectUrl>
 		<PackageId>Aigamo.ResXGenerator</PackageId>
+		<PackageTags>resx;resources;localization;source-generator;roslyn;analyzer</PackageTags>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/ycanardeau/ResXGenerator</RepositoryUrl>
 		<Description>ResXGenerator is a C# source generator to generate strongly-typed resource classes for looking up localized strings.</Description>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<IncludeSymbols>false</IncludeSymbols>
+		<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<NoWarn>$(NoWarn);NU5128</NoWarn>
 		<DevelopmentDependency>true</DevelopmentDependency>
@@ -33,6 +38,8 @@
 			<Pack>true</Pack>
 			<PackagePath>build\</PackagePath>
 		</None>
+		<AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+		<AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />		
 	</ItemGroup>
 
 	<ItemDefinitionGroup>
@@ -44,7 +51,6 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.9.0" />
 	</ItemGroup>
 
 	<Import Project="$(MSBuildProjectName).targets" />

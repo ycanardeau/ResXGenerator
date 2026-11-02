@@ -126,7 +126,7 @@ public class GeneratorLocalizerTests
 			public interface ICommonMessages
 			{
 				/// <summary>
-				/// Looks up a localized string similar to This entry has been deleted. It is still temporarily accessible, but won&#39;t show up in any of the listings..
+				/// Looks up a localized string similar to This entry has been deleted. It is still temporarily accessible, but won't show up in any of the listings..
 				/// </summary>
 				string EntryDeleted {get;}
 				/// <summary>
@@ -134,8 +134,8 @@ public class GeneratorLocalizerTests
 				/// </summary>
 				string EntryMergedTo {get;}
 				/// <summary>
-				/// Looks up a localized string similar to Draft = entry is missing crucial information. This status indicates that you&#39;re requesting additional information to be added or corrected.&lt;br /&gt;
-				/// Finished = The entry has all the necessary information, but it hasn&#39;t been inspected by a trusted user yet.&lt;br /&gt;
+				/// Looks up a localized string similar to Draft = entry is missing crucial information. This status indicates that you're requesting additional information to be added or corrected.&lt;br /&gt;
+				/// Finished = The entry has all the necessary information, but it hasn't been inspected by a trusted user yet.&lt;br /&gt;
 				/// Approved = The entry has been inspected and approved by a trusted user. Approved entries can only be edited by trusted users..
 				/// </summary>
 				string EntryStatusExplanation {get;}
@@ -144,7 +144,7 @@ public class GeneratorLocalizerTests
 				/// </summary>
 				string Locked {get;}
 				/// <summary>
-				/// Looks up a localized string similar to Choose the language for this name. &quot;Original&quot; is the name in original language that isn&#39;t English, for example Japanese. If the original language is English, do not input a name in the &quot;Original&quot; language..
+				/// Looks up a localized string similar to Choose the language for this name. "Original" is the name in original language that isn't English, for example Japanese. If the original language is English, do not input a name in the "Original" language..
 				/// </summary>
 				string NameLanguageHelp {get;}
 				/// <summary>

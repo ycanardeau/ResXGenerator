@@ -131,7 +131,7 @@ public class SettingsTests
 	public void FileSettings_RespectsEmptyRootNamespace(
 		string msBuildProjectFullPath,
 		string mainFile,
-		string rootNamespace,
+		string? rootNamespace,
 		string expectedLocalNamespace,
 		string expectedEmbeddedFilename
 	)
@@ -386,6 +386,29 @@ public class SettingsTests
 		globalOptions.IsValid.Should().Be(true);
 		globalOptions.StaticClass.Should().Be(false);
 		globalOptions.StaticMembers.Should().Be(false);
+	}
+
+	[Fact]
+	public void TargetPath_IsUsedForLocalNamespace()
+	{
+		var fileOptions = GenFileOptions.Select(
+			file: new GroupedAdditionalFile(
+				mainFile: new AdditionalTextWithHash(new AdditionalTextStub("Other/Strings.resx"), Guid.NewGuid()),
+				subFiles: []
+			),
+			options: new AnalyzerConfigOptionsProviderStub(
+				globalOptions: null!,
+				fileOptions: new AnalyzerConfigOptionsStub
+				{
+					TargetPath = "Resources\\Strings.resx"
+				}
+			),
+			globalOptions: s_globalOptions
+		);
+
+		_ = fileOptions.LocalNamespace.Should().Be("namespace1.Resources");
+		_ = fileOptions.ClassName.Should().Be("Strings");
+		_ = fileOptions.IsValid.Should().Be(true);
 	}
 
 	private class AnalyzerConfigOptionsStub : AnalyzerConfigOptions

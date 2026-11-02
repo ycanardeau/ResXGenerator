@@ -117,10 +117,23 @@
 	<resheader name="writer">
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
+	<assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+	<data name="BinaryFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+		<value>BinaryFile.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</data>
 	<data name="CreateDate" xml:space="preserve">
 		<value>OldestDa</value>
 	</data>
 	<data name="CreateDateDescending" xml:space="preserve">
 		<value>NewestDa</value>
+	</data>
+	<data name="TestIconAsBytes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+		<value>TestIcon.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</data>
+	<data name="TestImageAsBytes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+		<value>TestImage.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</data>
+	<data name="TextFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+		<value>TextFile.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
 	</data>
 </root>

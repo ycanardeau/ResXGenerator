@@ -86,17 +86,7 @@ public class GeneratorTests
 		result.SourceCode.Should().Be(expected);
 	}
 
-	private static void GenerateInner(
-		IResXGenerator generator,
-		bool publicClass = true,
-		bool staticClass = false,
-		bool partial = false,
-		bool nullForgivingOperators = false,
-		bool staticMembers = true,
-		string innerClassName = "inner",
-		InnerClassVisibility innerClassVisibility = InnerClassVisibility.SameAsOuter,
-		string innerClassInstanceName = ""
-	)
+	private static void GenerateInner(GenerateOptions options)
 	{
 		var expected =
 			$$"""
@@ -118,76 +108,83 @@ public class GeneratorTests
 			 ///Ressource class for ActivityEntrySortRuleNames
 			 ///</summary>
 			 [GeneratedCode("Aigamo.ResXGenerator", "{{Constants.Version}}")]
-			 {{(publicClass ? "public" : "internal")}}{{(partial ? " partial" : string.Empty)}}{{(staticClass ? " static" : string.Empty)}} class ActivityEntrySortRuleNames
+			 {{(options.PublicClass ? "public" : "internal")}}{{(options.Partial ? " partial" : string.Empty)}}{{(options.StaticClass ? " static" : string.Empty)}} class ActivityEntrySortRuleNames
 			 {
 			 
 			 """.NormalizeLineEndings();
 
-		if (!string.IsNullOrEmpty(innerClassInstanceName))
-			expected += $$"""
-							///<summary>
-							///Ressource class for inner
-							///</summary>
-							public {{innerClassName}} {{innerClassInstanceName}} { get; } = new();
-
-
-						""".NormalizeLineEndings();
+		expected = AppendInnerClassInstanceIfNeeded(options, expected);
 		expected +=
 			$$"""
 					///<summary>
 					///Ressource class for inner
 					///</summary>
 					[GeneratedCode("Aigamo.ResXGenerator", "{{Constants.Version}}")]
-					{{(publicClass ? "public" : "internal")}}{{(partial ? " partial" : string.Empty)}}{{(staticClass ? " static" : string.Empty)}} class {{innerClassName}}
+					{{(options.PublicClass ? "public" : "internal")}}{{(options.Partial ? " partial" : string.Empty)}}{{(options.StaticClass ? " static" : string.Empty)}} class {{options.InnerClassName}}
 					{
 						private static ResourceManager? s_resourceManager;
 						///<summary />
-						public static ResourceManager ResourceManager => s_resourceManager ??= new ResourceManager("VocaDb.Web.App_GlobalResources.ActivityEntrySortRuleNames", typeof({{innerClassName}}).Assembly);
+						public static ResourceManager ResourceManager => s_resourceManager ??= new ResourceManager("VocaDb.Web.App_GlobalResources.ActivityEntrySortRuleNames", typeof({{options.InnerClassName}}).Assembly);
 						///<summary />
-						public{{(staticMembers ? " static" : string.Empty)}} CultureInfo? CultureInfo { get; set; }
+						public{{(options.StaticMembers ? " static" : string.Empty)}} CultureInfo? CultureInfo { get; set; }
 
 						/// <summary>
 						/// Looks up a localized string similar to Oldest.
 						/// </summary>
-						public{{(staticMembers ? " static" : string.Empty)}} string{{(nullForgivingOperators ? string.Empty : "?")}} CreateDate => ResourceManager.GetString(nameof(CreateDate), CultureInfo){{(nullForgivingOperators ? "!" : string.Empty)}};
+						public{{(options.StaticMembers ? " static" : string.Empty)}} string{{(options.NullForgivingOperators ? string.Empty : "?")}} CreateDate => ResourceManager.GetString(nameof(CreateDate), CultureInfo){{(options.NullForgivingOperators ? "!" : string.Empty)}};
 
 						/// <summary>
 						/// Looks up a localized string similar to Newest.
 						/// </summary>
-						public{{(staticMembers ? " static" : string.Empty)}} string{{(nullForgivingOperators ? string.Empty : "?")}} CreateDateDescending => ResourceManager.GetString(nameof(CreateDateDescending), CultureInfo){{(nullForgivingOperators ? "!" : string.Empty)}};
+						public{{(options.StaticMembers ? " static" : string.Empty)}} string{{(options.NullForgivingOperators ? string.Empty : "?")}} CreateDateDescending => ResourceManager.GetString(nameof(CreateDateDescending), CultureInfo){{(options.NullForgivingOperators ? "!" : string.Empty)}};
 
 						/// <summary>
 						/// Looks up a localized string similar to Resource With Spaces.
 						/// </summary>
-						public{{(staticMembers ? " static" : string.Empty)}} string{{(nullForgivingOperators ? string.Empty : "?")}} Resource_With_Spaces => ResourceManager.GetString("Resource With Spaces", CultureInfo);
+						public{{(options.StaticMembers ? " static" : string.Empty)}} string{{(options.NullForgivingOperators ? string.Empty : "?")}} Resource_With_Spaces => ResourceManager.GetString("Resource With Spaces", CultureInfo);
 					}
 				}
 
 				""".NormalizeLineEndings();
 
-		var result = generator.Generate(
+		var result = options.Generator.Generate(
 			options: new GenFileOptions
 			{
 				LocalNamespace = "VocaDb.Web.App_GlobalResources",
 				EmbeddedFilename = "VocaDb.Web.App_GlobalResources.ActivityEntrySortRuleNames",
 				CustomToolNamespace = "Resources",
 				ClassName = "ActivityEntrySortRuleNames",
-				PublicClass = publicClass,
-				NullForgivingOperators = nullForgivingOperators,
+				PublicClass = options.PublicClass,
+				NullForgivingOperators = options.NullForgivingOperators,
 				GroupedFile = new GroupedAdditionalFile(
 					mainFile: new AdditionalTextWithHash(new AdditionalTextStub("", CodeResXTestsHelpers.GetText()), Guid.NewGuid()),
 					subFiles: []
 				),
-				StaticClass = staticClass,
-				PartialClass = partial,
-				StaticMembers = staticMembers,
-				InnerClassName = innerClassName,
-				InnerClassVisibility = innerClassVisibility,
-				InnerClassInstanceName = innerClassInstanceName
+				StaticClass = options.StaticClass,
+				PartialClass = options.Partial,
+				StaticMembers = options.StaticMembers,
+				InnerClassName = options.InnerClassName,
+				InnerClassVisibility = options.InnerClassVisibility,
+				InnerClassInstanceName = options.InnerClassInstanceName
 			}
 		);
+
 		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
 		result.SourceCode.Should().Be(expected);
+	}
+
+	private static string AppendInnerClassInstanceIfNeeded(GenerateOptions options, string expected)
+	{
+		if (!string.IsNullOrEmpty(options.InnerClassInstanceName))
+			expected += $$"""
+							///<summary>
+							///Ressource class for inner
+							///</summary>
+							public {{options.InnerClassName}} {{options.InnerClassInstanceName}} { get; } = new();
+
+
+						""".NormalizeLineEndings();
+		return expected;
 	}
 
 	[Fact]
@@ -234,14 +231,14 @@ public class GeneratorTests
 	public void Generate_StringBuilder_Inner()
 	{
 		var generator = new ResourceManagerGenerator();
-		GenerateInner(generator);
+		GenerateInner(new GenerateOptions(generator));
 	}
 
 	[Fact]
 	public void Generate_StringBuilder_InnerInstance()
 	{
 		var generator = new ResourceManagerGenerator();
-		GenerateInner(generator, innerClassInstanceName: "Resources", staticMembers: false);
+		GenerateInner(new GenerateOptions(generator) { InnerClassInstanceName = "Resources", StaticMembers = false });
 	}
 
 	[Fact]
@@ -276,7 +273,7 @@ public class GeneratorTests
 				public static CultureInfo? CultureInfo { get; set; }
 
 				/// <summary>
-				/// Looks up a localized string similar to This entry has been deleted. It is still temporarily accessible, but won&#39;t show up in any of the listings..
+				/// Looks up a localized string similar to This entry has been deleted. It is still temporarily accessible, but won't show up in any of the listings..
 				/// </summary>
 				public static string? EntryDeleted => ResourceManager.GetString(nameof(EntryDeleted), CultureInfo);
 
@@ -286,8 +283,8 @@ public class GeneratorTests
 				public static string? EntryMergedTo => ResourceManager.GetString(nameof(EntryMergedTo), CultureInfo);
 
 				/// <summary>
-				/// Looks up a localized string similar to Draft = entry is missing crucial information. This status indicates that you&#39;re requesting additional information to be added or corrected.&lt;br /&gt;
-				/// Finished = The entry has all the necessary information, but it hasn&#39;t been inspected by a trusted user yet.&lt;br /&gt;
+				/// Looks up a localized string similar to Draft = entry is missing crucial information. This status indicates that you're requesting additional information to be added or corrected.&lt;br /&gt;
+				/// Finished = The entry has all the necessary information, but it hasn't been inspected by a trusted user yet.&lt;br /&gt;
 				/// Approved = The entry has been inspected and approved by a trusted user. Approved entries can only be edited by trusted users..
 				/// </summary>
 				public static string? EntryStatusExplanation => ResourceManager.GetString(nameof(EntryStatusExplanation), CultureInfo);
@@ -298,7 +295,7 @@ public class GeneratorTests
 				public static string? Locked => ResourceManager.GetString(nameof(Locked), CultureInfo);
 
 				/// <summary>
-				/// Looks up a localized string similar to Choose the language for this name. &quot;Original&quot; is the name in original language that isn&#39;t English, for example Japanese. If the original language is English, do not input a name in the &quot;Original&quot; language..
+				/// Looks up a localized string similar to Choose the language for this name. "Original" is the name in original language that isn't English, for example Japanese. If the original language is English, do not input a name in the "Original" language..
 				/// </summary>
 				public static string? NameLanguageHelp => ResourceManager.GetString(nameof(NameLanguageHelp), CultureInfo);
 
@@ -334,14 +331,6 @@ public class GeneratorTests
 			},
 			TestContext.Current.CancellationToken
 		);
-
-		var expectedEnd = expected[^20..]
-		.Replace("\r", "\\r")
-		.Replace("\n", "\\n");
-
-		var actualEnd = result.SourceCode[^20..]
-		.Replace("\r", "\\r")
-		.Replace("\n", "\\n");
 
 		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
 		result.SourceCode.Should().Be(expected);

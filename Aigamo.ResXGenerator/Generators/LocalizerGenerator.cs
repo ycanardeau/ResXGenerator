@@ -11,8 +11,10 @@ public sealed class LocalizerGenerator : GeneratorBase<GenFileOptions>, IResXGen
 		Init(options);
 		var generatedFileName = $"{options.LocalNamespace}.{options.ClassName}.g.cs";
 
-		Content = options.GroupedFile.MainFile.File.GetText(cancellationToken);
-		if (Content is null) return new GeneratedOutput(options.GroupedFile.MainFile.File.Path, "//ERROR reading file:", []);
+		if (options.GroupedFile.MainFile.File.GetText(cancellationToken) is not { } content)
+			return new GeneratedOutput(options.GroupedFile.MainFile.File.Path, "//ERROR reading file:", []);
+
+		Content = content;
 
 		Validator.ValidateInconsistentNameSpace(Options);
 		Validator.ValidateLocalizationModifiers(Options);

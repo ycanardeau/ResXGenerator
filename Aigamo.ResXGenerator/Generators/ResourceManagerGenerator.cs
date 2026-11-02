@@ -6,7 +6,7 @@ namespace Aigamo.ResXGenerator.Generators;
 
 public sealed class ResourceManagerGenerator : GeneratorBase<GenFileOptions>, IResXGenerator
 {
-	private StringBuilderGeneratorHelper Helper { get; set; }
+	private StringBuilderGeneratorHelper Helper { get; set; } = default!;
 
 	public override GeneratedOutput Generate(GenFileOptions options, CancellationToken cancellationToken = default)
 	{
@@ -74,6 +74,7 @@ public sealed class ResourceManagerGenerator : GeneratorBase<GenFileOptions>, IR
 			default:
 				Helper.Append(" => (");
 				Helper.Append(typeName.ToCSharp());
+				Helper.Append(Options.NullForgivingOperators ? string.Empty : "?");
 				Helper.Append(")");
 
 				if (resourceAccessByName)

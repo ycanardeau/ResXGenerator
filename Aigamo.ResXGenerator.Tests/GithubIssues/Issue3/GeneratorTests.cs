@@ -109,7 +109,7 @@ public class GeneratorTests
 				public static CultureInfo? CultureInfo { get; set; }
 
 				/// <summary>
-				/// Looks up a localized string similar to String &#39;{0}&#39; is not a valid identifier..
+				/// Looks up a localized string similar to String '{0}' is not a valid identifier..
 				/// </summary>
 				public static string? Invalid_identifier__0_ => ResourceManager.GetString("Invalid identifier {0}", CultureInfo);
 			}

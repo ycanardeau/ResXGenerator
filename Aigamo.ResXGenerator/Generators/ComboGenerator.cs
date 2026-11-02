@@ -8,8 +8,8 @@ namespace Aigamo.ResXGenerator.Generators;
 public sealed class ComboGenerator : GeneratorBase<CultureInfoCombo>, IComboGenerator
 {
 	private const string OutputStringFilenameFormat = "Aigamo.ResXGenerator.{0}.g.cs";
-	private static readonly Dictionary<int, List<int>> s_allChildren = new();
-	private StringBuilderGeneratorHelper Helper { get; set; }
+	private static readonly Dictionary<int, List<int>> s_allChildren = [];
+	private StringBuilderGeneratorHelper Helper { get; set; } = default!;
 
 	/// <summary>
 	/// Build all CultureInfo children

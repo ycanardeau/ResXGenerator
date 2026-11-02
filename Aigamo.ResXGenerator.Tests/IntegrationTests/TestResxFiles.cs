@@ -42,14 +42,12 @@ public class TestResxFiles
 	}
 
 	[Fact]
-	public void TestSkipFile_DoesNotGenerate() =>
-		GetType().Assembly.GetTypes().Should()
-			.NotContain(t => t.Name == "Test3");
+	public void TestSkipFile_DoesNotGenerate() => GetType().Assembly.GetTypes().Should().NotContain(t => t.Name == "Test3");
+
+	// Simply loading a resource should prove that the LogicalName was interpreted correctly
+	[Fact]
+	public void TestLogicalNameMetadata() => Test5.CreateDate.Should().Be("Oldest");
 
 	[Fact]
-	public void TestLogicalNameMetadata()
-	{
-		// Simply loading a resource should prove that the LogicalName was interpreted correctly
-		Test5.CreateDate.Should().Be("Oldest");
-	}
+	public void TestAccentSensitiveResource() => Test6.AccentSensitiveResource.Should().Be("Test des accents : ÉÀÈÙ ÂÊÎÔÛ ÄËÏÖÜ Ÿ Ç æ œ. Ça fonctionne-t-il ? Oui, déjà vu !");
 }

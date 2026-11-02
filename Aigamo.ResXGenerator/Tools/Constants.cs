@@ -4,7 +4,7 @@ namespace Aigamo.ResXGenerator.Tools;
 
 internal static class Constants
 {
-	public const string Version = "4.4.1";
+	public const string Version = "4.4.2";
 	public const string SystemGlobalization = $"{nameof(System)}.{nameof(System.Globalization)}";
 	public const string SystemResources = $"{nameof(System)}.{nameof(System.Resources)}";
 	public const string SystemCodeDomCompiler = $"{nameof(System)}.{nameof(System.CodeDom)}.{nameof(System.CodeDom.Compiler)}";

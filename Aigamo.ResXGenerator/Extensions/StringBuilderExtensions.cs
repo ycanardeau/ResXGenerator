@@ -16,10 +16,7 @@ internal static class StringBuilderExtensions
 	/// This method always appends a LF character instead of the platform-dependent <see cref="Environment.NewLine"/>.
 	/// Use this to ensure consistent line endings across Windows, Mac, and Linux.
 	/// </remarks>
-	public static void AppendLineLF(this StringBuilder builder)
-	{
-		builder.Append('\n');
-	}
+	public static void AppendLineLF(this StringBuilder builder) => builder.Append('\n');
 
 	/// <summary>
 	/// Appends the specified string followed by a line feed character (<c>'\n'</c>)
@@ -31,9 +28,5 @@ internal static class StringBuilderExtensions
 	/// This method always appends a LF character instead of the platform-dependent <see cref="Environment.NewLine"/>.
 	/// Use this to ensure consistent line endings across Windows, Mac, and Linux.
 	/// </remarks>
-	public static void AppendLineLF(this StringBuilder builder, string value)
-	{
-		builder.Append(value);
-		builder.AppendLineLF();
-	}
+	public static void AppendLineLF(this StringBuilder builder, string value) => builder.Append(value).AppendLineLF();
 }
