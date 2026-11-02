@@ -88,7 +88,7 @@ public static class Utilities
 
 			if (!string.IsNullOrWhiteSpace(targetPath))
 			{
-				var normalizedTargetPath = targetPath!.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+				var normalizedTargetPath = targetPath!.Replace('\\', '/');
 				localNamespace = (Path.GetDirectoryName(normalizedTargetPath) ?? string.Empty)
 					.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
 					.Trim(Path.AltDirectorySeparatorChar)
@@ -128,7 +128,7 @@ public static class Utilities
 	public static string GetClassNameFromPath(string resxFilePath)
 	{
 		// Fix issues with files that have names like xxx.aspx.resx
-		var className = resxFilePath;
+		var className = Path.GetFileName(resxFilePath.Replace('\\', '/'));
 		while (className.Contains("."))
 		{
 			className = Path.GetFileNameWithoutExtension(className);
