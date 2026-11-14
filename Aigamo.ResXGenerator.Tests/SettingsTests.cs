@@ -38,6 +38,7 @@ public class SettingsTests
 		globalOptions.StaticMembers.Should().Be(true);
 		globalOptions.PublicClass.Should().Be(false);
 		globalOptions.InternalRegistration.Should().Be(false);
+		globalOptions.GenerateFormatMethods.Should().Be(false);
 		globalOptions.PartialClass.Should().Be(false);
 		globalOptions.IsValid.Should().Be(true);
 		globalOptions.GenerateCode.Should().Be(false);
@@ -65,6 +66,7 @@ public class SettingsTests
 					ResXGenerator_PublicClass = "true",
 					ResXGenerator_InternalRegistration = "true",
 					ResXGenerator_PartialClass = "true",
+					ResXGenerator_GenerateFormatMethods = "true",
 					ResXGenerator_GenerationType = "ResourceManager"
 				},
 				fileOptions: null!
@@ -84,6 +86,7 @@ public class SettingsTests
 		globalOptions.StaticMembers.Should().Be(false);
 		globalOptions.PublicClass.Should().Be(true);
 		globalOptions.InternalRegistration.Should().Be(true);
+		globalOptions.GenerateFormatMethods.Should().Be(true);
 		globalOptions.PartialClass.Should().Be(true);
 		globalOptions.IsValid.Should().Be(true);
 		globalOptions.GenerationType.Should().Be(GenerationType.ResourceManager);
@@ -111,6 +114,7 @@ public class SettingsTests
 		fileOptions.StaticMembers.Should().Be(true);
 		fileOptions.PublicClass.Should().Be(false);
 		fileOptions.InternalRegistration.Should().Be(false);
+		fileOptions.GenerateFormatMethods.Should().Be(false);
 		fileOptions.PartialClass.Should().Be(false);
 		fileOptions.GenerateCode.Should().Be(false);
 		fileOptions.LocalNamespace.Should().Be("namespace1");
@@ -222,6 +226,7 @@ public class SettingsTests
 					StaticMembers = "false",
 					PublicClass = "true",
 					PartialClass = "true",
+					GenerateFormatMethods = "true",
 					GenerateCode = "true",
 					GenerationType = "ResourceManager"
 				}
@@ -236,6 +241,7 @@ public class SettingsTests
 		fileOptions.StaticMembers.Should().Be(false);
 		fileOptions.PublicClass.Should().Be(true);
 		fileOptions.PartialClass.Should().Be(true);
+		fileOptions.GenerateFormatMethods.Should().Be(true);
 		fileOptions.IsValid.Should().Be(true);
 		fileOptions.GenerateCode.Should().Be(true);
 		fileOptions.LocalNamespace.Should().Be("namespace1");
@@ -265,6 +271,7 @@ public class SettingsTests
 					ResXGenerator_PublicClass = "true",
 					ResXGenerator_InternalRegistration = "true",
 					ResXGenerator_PartialClass = "true",
+					ResXGenerator_GenerateFormatMethods = "true",
 				},
 				fileOptions: null!
 			),
@@ -289,6 +296,7 @@ public class SettingsTests
 		fileOptions.StaticMembers.Should().Be(false);
 		fileOptions.PublicClass.Should().Be(true);
 		fileOptions.InternalRegistration.Should().Be(true);
+		fileOptions.GenerateFormatMethods.Should().Be(true);
 		fileOptions.PartialClass.Should().Be(true);
 		fileOptions.GenerateCode.Should().Be(false);
 		fileOptions.LocalNamespace.Should().Be("namespace1");
@@ -348,6 +356,40 @@ public class SettingsTests
 	}
 
 	[Fact]
+	public void FileSettings_CanDisableGenerateFormatMethodsEnabledGlobally()
+	{
+		var globalOptions = GlobalOptions.Select(
+			provider: new AnalyzerConfigOptionsProviderStub(
+				globalOptions: new AnalyzerConfigOptionsStub
+				{
+					RootNamespace = "namespace1",
+					MSBuildProjectFullPath = "project1.csproj",
+					MSBuildProjectName = "project1",
+					ResXGenerator_GenerateFormatMethods = "true",
+				},
+				fileOptions: null!
+			),
+			token: default
+		);
+		var fileOptions = GenFileOptions.Select(
+			file: new GroupedAdditionalFile(
+				mainFile: new AdditionalTextWithHash(new AdditionalTextStub("Path1.resx"), Guid.NewGuid()),
+				subFiles: []
+			),
+			options: new AnalyzerConfigOptionsProviderStub(
+				globalOptions: null!,
+				fileOptions: new AnalyzerConfigOptionsStub
+				{
+					GenerateFormatMethods = "false",
+				}
+			),
+			globalOptions: globalOptions
+		);
+		globalOptions.GenerateFormatMethods.Should().Be(true);
+		fileOptions.GenerateFormatMethods.Should().Be(false);
+	}
+
+	[Fact]
 	public void GlobalOptions_CanSwitchGenerationType()
 	{
 		var globalOptions = GlobalOptions.Select(
@@ -389,6 +431,7 @@ public class SettingsTests
 		public string? ResXGenerator_InnerClassInstanceName { get; init; }
 		public string? ResXGenerator_GenerateCode { get; init; }
 		public string? ResXGenerator_GenerationType { get; init; }
+		public string? ResXGenerator_GenerateFormatMethods { get; init; }
 		public string? CustomToolNamespace { get; init; }
 		public string? TargetPath { get; init; }
 		public string? ClassNamePostfix { get; init; }
@@ -402,6 +445,7 @@ public class SettingsTests
 		public string? InnerClassInstanceName { get; init; }
 		public string? GenerateCode { get; init; }
 		public string? GenerationType { get; init; }
+		public string? GenerateFormatMethods { get; init; }
 		public string? SkipFile { get; init; }
 
 		// ReSharper restore InconsistentNaming
@@ -427,6 +471,7 @@ public class SettingsTests
 					"build_property.ResXGenerator_InnerClassName" => ResXGenerator_InnerClassName,
 					"build_property.ResXGenerator_InnerClassInstanceName" => ResXGenerator_InnerClassInstanceName,
 					"build_property.ResXGenerator_GenerationType" => ResXGenerator_GenerationType,
+					"build_property.ResXGenerator_GenerateFormatMethods" => ResXGenerator_GenerateFormatMethods,
 					"build_metadata.EmbeddedResource.CustomToolNamespace" => CustomToolNamespace,
 					"build_metadata.EmbeddedResource.TargetPath" => TargetPath,
 					"build_metadata.EmbeddedResource.ClassNamePostfix" => ClassNamePostfix,
@@ -441,6 +486,7 @@ public class SettingsTests
 					"build_metadata.EmbeddedResource.GenerateCode" => GenerateCode,
 					"build_metadata.EmbeddedResource.SkipFile" => SkipFile,
 					"build_metadata.EmbeddedResource.GenerationType" => GenerationType,
+					"build_metadata.EmbeddedResource.GenerateFormatMethods" => GenerateFormatMethods,
 					_ => null
 				};
 			}

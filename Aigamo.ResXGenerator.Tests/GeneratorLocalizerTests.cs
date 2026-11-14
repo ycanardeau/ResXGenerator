@@ -1,5 +1,6 @@
 ﻿using Aigamo.ResXGenerator.Extensions;
 using Aigamo.ResXGenerator.Generators;
+using Aigamo.ResXGenerator.Models;
 using Aigamo.ResXGenerator.Tools;
 using FluentAssertions;
 using Microsoft.CodeAnalysis;
@@ -83,6 +84,187 @@ public class GeneratorLocalizerTests
 		var generator = new LocalizerGenerator();
 		Generate(generator);
 		Generate(generator, nullForgivingOperators: true);
+	}
+
+	[Fact]
+	public void Generate_Localizer_FormattableValue_WithoutOption_DoesNotGenerateFormatMethods()
+	{
+		const string text =
+			"""
+			<?xml version="1.0" encoding="utf-8"?>
+			<root>
+				<data name="Greeting" xml:space="preserve">
+					<value>Hello {0}!</value>
+				</data>
+			</root>
+			""";
+
+		var generator = new LocalizerGenerator();
+		var result = generator.Generate(
+			options: new GenFileOptions
+			{
+				LocalNamespace = "VocaDb.Web.App_GlobalResources",
+				EmbeddedFilename = "VocaDb.Web.App_GlobalResources.CommonMessages",
+				GroupedFile = new GroupedAdditionalFile(
+					mainFile: new AdditionalTextWithHash(new AdditionalTextStub("", text), Guid.NewGuid()),
+					subFiles: []
+				),
+				GenerationType = GenerationType.StringLocalizer,
+				ClassName = "CommonMessages"
+			}
+		);
+
+		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Greeting => stringLocalizer[\"Greeting\"];");
+		result.SourceCode.ReplaceLineEndings().Should().NotContain("public string Greeting(object arg0)");
+	}
+
+	[Fact]
+	public void Generate_Localizer_FormattableValue_GeneratesMethodWithParameters_WhenEnabled()
+	{
+		const string text =
+			"""
+			<?xml version="1.0" encoding="utf-8"?>
+			<root>
+				<data name="Greeting" xml:space="preserve">
+					<value>Hello {0}!</value>
+				</data>
+				<data name="MultiGreeting" xml:space="preserve">
+					<value>Hi {1} {0}!</value>
+				</data>
+			</root>
+			""";
+
+		var generator = new LocalizerGenerator();
+		var result = generator.Generate(
+			options: new GenFileOptions
+			{
+				LocalNamespace = "VocaDb.Web.App_GlobalResources",
+				EmbeddedFilename = "VocaDb.Web.App_GlobalResources.CommonMessages",
+				GroupedFile = new GroupedAdditionalFile(
+					mainFile: new AdditionalTextWithHash(new AdditionalTextStub("", text), Guid.NewGuid()),
+					subFiles: []
+				),
+				GenerationType = GenerationType.StringLocalizer,
+				ClassName = "CommonMessages",
+				GenerateFormatMethods = true
+			}
+		);
+
+		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
+		result.SourceCode.ReplaceLineEndings().Should().NotContain("public string Greeting => stringLocalizer[\"Greeting\"];");
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Greeting(object arg0) => stringLocalizer[\"Greeting\", arg0];");
+		result.SourceCode.ReplaceLineEndings().Should().NotContain("public string MultiGreeting => stringLocalizer[\"MultiGreeting\"];");
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string MultiGreeting(object arg0, object arg1) => stringLocalizer[\"MultiGreeting\", arg0, arg1];");
+		result.SourceCode.ReplaceLineEndings().Should().NotContain("string Greeting {get;}");
+		result.SourceCode.ReplaceLineEndings().Should().Contain("string Greeting(object arg0);");
+		result.SourceCode.ReplaceLineEndings().Should().NotContain("string MultiGreeting {get;}");
+		result.SourceCode.ReplaceLineEndings().Should().Contain("string MultiGreeting(object arg0, object arg1);");
+	}
+
+	private static GeneratedOutput GenerateWithFormatMethods(string text) =>
+		new LocalizerGenerator().Generate(
+			options: new GenFileOptions
+			{
+				LocalNamespace = "VocaDb.Web.App_GlobalResources",
+				EmbeddedFilename = "VocaDb.Web.App_GlobalResources.CommonMessages",
+				GroupedFile = new GroupedAdditionalFile(
+					mainFile: new AdditionalTextWithHash(new AdditionalTextStub("", text), Guid.NewGuid()),
+					subFiles: []
+				),
+				GenerationType = GenerationType.StringLocalizer,
+				ClassName = "CommonMessages",
+				GenerateFormatMethods = true
+			}
+		);
+
+	[Fact]
+	public void Generate_Localizer_FormatItemsWithAlignmentOrFormat_GenerateMethodWithParameters_WhenEnabled()
+	{
+		const string text =
+			"""
+			<?xml version="1.0" encoding="utf-8"?>
+			<root>
+				<data name="Seen" xml:space="preserve">
+					<value>First seen {0:g}, last seen {1,-10:d}</value>
+				</data>
+				<data name="Escaped" xml:space="preserve">
+					<value>Write {{0}} for the first value</value>
+				</data>
+			</root>
+			""";
+
+		var result = GenerateWithFormatMethods(text);
+
+		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Seen(object arg0, object arg1) => stringLocalizer[\"Seen\", arg0, arg1];");
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Escaped => stringLocalizer[\"Escaped\"];");
+	}
+
+	[Fact]
+	public void Generate_Localizer_FormatItemsWithAGap_GenerateEveryParameterUpToTheHighest_WhenEnabled()
+	{
+		const string text =
+			"""
+			<?xml version="1.0" encoding="utf-8"?>
+			<root>
+				<data name="Second" xml:space="preserve">
+					<value>Only the second: {1}</value>
+				</data>
+			</root>
+			""";
+
+		var result = GenerateWithFormatMethods(text);
+
+		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Second(object arg0, object arg1) => stringLocalizer[\"Second\", arg0, arg1];");
+	}
+
+	[Fact]
+	public void Generate_Localizer_FormatItemsWithSpacesAfterTheIndex_GenerateMethodWithParameters_WhenEnabled()
+	{
+		const string text =
+			"""
+			<?xml version="1.0" encoding="utf-8"?>
+			<root>
+				<data name="Spaced" xml:space="preserve">
+					<value>{0 } and {1 :g}</value>
+				</data>
+			</root>
+			""";
+
+		var result = GenerateWithFormatMethods(text);
+
+		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Spaced(object arg0, object arg1) => stringLocalizer[\"Spaced\", arg0, arg1];");
+	}
+
+	[Fact]
+	public void Generate_Localizer_FormatItemsWithAnIndexOutOfRange_GenerateProperty_WhenEnabled()
+	{
+		const string text =
+			"""
+			<?xml version="1.0" encoding="utf-8"?>
+			<root>
+				<data name="Overflow" xml:space="preserve">
+					<value>Overflow {99999999999}</value>
+				</data>
+				<data name="TooMany" xml:space="preserve">
+					<value>First {0}, too many {100}</value>
+				</data>
+				<data name="Highest" xml:space="preserve">
+					<value>Highest {99}</value>
+				</data>
+			</root>
+			""";
+
+		var result = GenerateWithFormatMethods(text);
+
+		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Overflow => stringLocalizer[\"Overflow\"];");
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string TooMany => stringLocalizer[\"TooMany\"];");
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Highest(object arg0, ");
+		result.SourceCode.ReplaceLineEndings().Should().Contain(", object arg99) => stringLocalizer[\"Highest\", arg0, ");
 	}
 
 	[Fact]
