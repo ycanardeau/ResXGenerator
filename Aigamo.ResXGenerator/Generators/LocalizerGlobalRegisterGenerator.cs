@@ -22,7 +22,7 @@ public sealed class LocalizerGlobalRegisterGenerator : GeneratorBase<ImmutableAr
 
 			namespace ResXGenerator.Registration;
 
-			public static class ResXGeneratorRegistrationExtension
+			{{Options.All(f => f.InternalRegistration).InterpolateCondition("internal", "public")}} static class ResXGeneratorRegistrationExtension
 			{
 				public static IServiceCollection UsingResXGenerator(this IServiceCollection services)
 				{

@@ -13,6 +13,7 @@ public readonly record struct GenFileOptions
 	public bool StaticClass { get; init; }
 	public bool NullForgivingOperators { get; init; }
 	public bool PublicClass { get; init; }
+	public bool InternalRegistration { get; init; }
 	public string ClassName { get; init; }
 	public string? CustomToolNamespace { get; init; }
 	public string LocalNamespace { get; init; }
@@ -83,6 +84,8 @@ public readonly record struct GenFileOptions
 				: classNameFromFileName + globalOptions.ClassNamePostfix;
 
 		NullForgivingOperators = globalOptions.NullForgivingOperators;
+
+		InternalRegistration = globalOptions.InternalRegistration;
 
 		PublicClass =
 			options.TryGetValue("build_metadata.EmbeddedResource.PublicClass", out var perFilePublicClassSwitch) &&

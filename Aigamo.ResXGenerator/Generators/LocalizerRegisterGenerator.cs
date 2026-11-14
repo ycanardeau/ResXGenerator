@@ -28,7 +28,7 @@ public sealed class LocalizerRegisterGenerator : GeneratorBase<GenFilesNamespace
 
 				namespace {{options.Namespace}};
 
-				public static class {{options.SafeNamespaceName}}RegistrationExtensions
+				{{Options.InternalRegistration.InterpolateCondition("internal", "public")}} static class {{options.SafeNamespaceName}}RegistrationExtensions
 				{
 					public static IServiceCollection {{options.NameOfUsingMethodRegistration}}(this IServiceCollection services)
 					{

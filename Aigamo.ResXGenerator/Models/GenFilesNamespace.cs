@@ -9,5 +9,7 @@ public record GenFilesNamespace(string Namespace, ImmutableArray<GenFileOptions>
 
 	public bool NullForgivingOperator => Files.All(f => f.NullForgivingOperators);
 
+	public bool InternalRegistration => Files.All(f => f.InternalRegistration);
+
 	public string NameOfUsingMethodRegistration => $"Using{SafeNamespaceName}ResX";
 }

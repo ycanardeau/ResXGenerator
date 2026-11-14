@@ -199,6 +199,28 @@ instead of
 public static string? CreateDate => ResourceManager.GetString(nameof(CreateDate), CultureInfo);
 ```
 
+### InternalRegistration (globally)
+
+With `GenerationType` [StringLocalizer](#using-istringlocalizer), every project gets the same registration class,
+`ResXGenerator.Registration.ResXGeneratorRegistrationExtension`. When such a project references another one that
+generates it too, both classes are visible and the call to `UsingResXGenerator()` is ambiguous (CS0121).
+
+```xml
+<PropertyGroup>
+	<ResXGenerator_InternalRegistration>true</ResXGenerator_InternalRegistration>
+</PropertyGroup>
+```
+
+By setting `ResXGenerator_InternalRegistration` to `true` in the referenced project, ResXGenerator generates its
+registration classes as `internal`. That project then offers its registration through a method of its own:
+
+```cs
+public static class ServiceCollectionExtensions
+{
+	public static IServiceCollection AddSharedResources(this IServiceCollection services) => services.UsingResXGenerator();
+}
+```
+
 ### Non-static classes (per file or globally)
 
 To use generated resources with [Microsoft.Extensions.Localization](https://docs.microsoft.com/en-us/dotnet/core/extensions/localization) `IStringLocalizer<T>` and resource manager, the resolved type cannot be a static class. You can disable default behavior per file by setting the value to `false`.

@@ -10,6 +10,7 @@
 		<CompilerVisibleProperty Include="RootNamespace" />
 		<CompilerVisibleProperty Include="CustomToolNamespace" />
 		<CompilerVisibleProperty Include="ResXGenerator_PublicClass" />
+		<CompilerVisibleProperty Include="ResXGenerator_InternalRegistration" />
 		<CompilerVisibleProperty Include="ResXGenerator_NullForgivingOperators" />
 		<CompilerVisibleProperty Include="ResXGenerator_StaticClass" />
 		<CompilerVisibleProperty Include="ResXGenerator_StaticMembers" />
