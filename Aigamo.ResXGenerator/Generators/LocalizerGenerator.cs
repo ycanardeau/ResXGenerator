@@ -7,20 +7,75 @@ namespace Aigamo.ResXGenerator.Generators;
 
 public sealed class LocalizerGenerator : GeneratorBase<GenFileOptions>, IResXGenerator
 {
-	public override GeneratedOutput Generate(GenFileOptions options, CancellationToken cancellationToken = default)
+	// Format items with a higher index are treated as plain text, so a value like "{99999999999}" can neither overflow
+	// nor produce a method with an absurd number of parameters.
+	private const int MaxFormatIndex = 99;
+
+	// The format items of a composite format string, "{0}", "{1:g}", "{2,-10}", without escaped braces ("{{0}}"). Every
+	// index up to the highest gets a parameter, since string.Format needs an argument for each.
+	private static string[] GetFormatParameters(string value)
 	{
-		Init(options);
-		var generatedFileName = $"{options.LocalNamespace}.{options.ClassName}.g.cs";
+		var highest = -1;
+		for (var i = 0; i < value.Length; i++)
+		{
+			if (value[i] != '{') continue;
+			if (i + 1 < value.Length && value[i + 1] == '{')
+			{
+				i++;
+				continue;
+			}
 
-		Content = options.GroupedFile.MainFile.File.GetText(cancellationToken);
-		if (Content is null) return new GeneratedOutput(options.GroupedFile.MainFile.File.Path, "//ERROR reading file:", []);
+			var end = i + 1;
+			while (end < value.Length && value[end] is >= '0' and <= '9') end++;
+			var digits = end - i - 1;
+			// string.Format allows spaces between the index and the alignment, format or closing brace.
+			while (end < value.Length && value[end] == ' ') end++;
+			if (digits == 0 || end >= value.Length || value[end] is not ('}' or ',' or ':')) continue;
 
-		Validator.ValidateInconsistentNameSpace(Options);
-		Validator.ValidateLocalizationModifiers(Options);
+			if (!int.TryParse(value.Substring(i + 1, digits), NumberStyles.None, CultureInfo.InvariantCulture, out var index) || index > MaxFormatIndex)
+				return [];
 
-		var sourceCode = GenerateResourceManager();
+			highest = Math.Max(highest, index);
+		}
 
-		return new GeneratedOutput(generatedFileName, sourceCode, Validator.ErrorsAndWarnings);
+		return [.. Enumerable.Range(0, highest + 1).Select(index => $"arg{index}")];
+	}
+
+	private string GenerateInterfaceMembers(FallBackItem fallbackItem)
+	{
+		var parameters = GetFormatParameters(fallbackItem.Value);
+		if (parameters.Length > 0 && Options.GenerateFormatMethods)
+		{
+			return $$"""
+				/// <summary>
+				/// Looks up a localized string similar to {{fallbackItem.Value.ToXmlCommentSafe()}}.
+				/// </summary>
+				string {{fallbackItem.Key}}({{string.Join(", ", parameters.Select(p => $"object {p}"))}});
+				""";
+		}
+
+		return $$"""
+			/// <summary>
+			/// Looks up a localized string similar to {{fallbackItem.Value.ToXmlCommentSafe()}}.
+			/// </summary>
+			string {{fallbackItem.Key}} {get;}
+			""";
+	}
+
+	private string GenerateMembers(FallBackItem fallbackItem)
+	{
+		if (!Validator.ValidateMember(fallbackItem, Options))
+			return $"// Skipped invalid member name: {fallbackItem.Key}";
+
+		var parameters = GetFormatParameters(fallbackItem.Value);
+		if (parameters.Length > 0 && Options.GenerateFormatMethods)
+		{
+			return $$"""
+				public string {{fallbackItem.Key}}({{string.Join(", ", parameters.Select(p => $"object {p}"))}}) => stringLocalizer["{{fallbackItem.Key}}", {{string.Join(", ", parameters)}}];
+				""";
+		}
+
+		return $"public string {fallbackItem.Key} => stringLocalizer[\"{fallbackItem.Key}\"];";
 	}
 
 	//Note with StringLocalization injection work with singleton or transient
@@ -51,63 +106,19 @@ public sealed class LocalizerGenerator : GeneratorBase<GenFileOptions>, IResXGen
 				""";
 	}
 
-	private string GenerateMembers(FallBackItem fallbackItem)
+	public override GeneratedOutput Generate(GenFileOptions options, CancellationToken cancellationToken = default)
 	{
-		if (!Validator.ValidateMember(fallbackItem, Options))
-			return $"// Skipped invalid member name: {fallbackItem.Key}";
+		Init(options);
+		var generatedFileName = $"{options.LocalNamespace}.{options.ClassName}.g.cs";
 
-		var parameters = GetFormatParameters(fallbackItem.Value);
-		if (parameters.Length > 0 && Options.GenerateFormatMethods)
-		{
-			return $$"""
-				public string {{fallbackItem.Key}}({{string.Join(", ", parameters.Select(p => $"object {p}"))}}) => stringLocalizer["{{fallbackItem.Key}}", {{string.Join(", ", parameters)}}];
-				""";
-		}
+		Content = options.GroupedFile.MainFile.File.GetText(cancellationToken);
+		if (Content is null) return new GeneratedOutput(options.GroupedFile.MainFile.File.Path, "//ERROR reading file:", []);
 
-		return $"public string {fallbackItem.Key} => stringLocalizer[\"{fallbackItem.Key}\"];";
-	}
+		Validator.ValidateInconsistentNameSpace(Options);
+		Validator.ValidateLocalizationModifiers(Options);
 
-	private string GenerateInterfaceMembers(FallBackItem fallbackItem)
-	{
-		var parameters = GetFormatParameters(fallbackItem.Value);
-		if (parameters.Length > 0 && Options.GenerateFormatMethods)
-		{
-			return $$"""
-				/// <summary>
-				/// Looks up a localized string similar to {{fallbackItem.Value.ToXmlCommentSafe()}}.
-				/// </summary>
-				string {{fallbackItem.Key}}({{string.Join(", ", parameters.Select(p => $"object {p}"))}});
-				""";
-		}
+		var sourceCode = GenerateResourceManager();
 
-		return $$"""
-			/// <summary>
-			/// Looks up a localized string similar to {{fallbackItem.Value.ToXmlCommentSafe()}}.
-			/// </summary>
-			string {{fallbackItem.Key}} {get;}
-			""";
-	}
-
-	// The format items of a composite format string, "{0}", "{1:g}", "{2,-10}", without escaped braces ("{{0}}"). Every
-	// index up to the highest gets a parameter, since string.Format needs an argument for each.
-	private static string[] GetFormatParameters(string value)
-	{
-		var highest = -1;
-		for (var i = 0; i < value.Length; i++)
-		{
-			if (value[i] != '{') continue;
-			if (i + 1 < value.Length && value[i + 1] == '{')
-			{
-				i++;
-				continue;
-			}
-
-			var end = i + 1;
-			while (end < value.Length && char.IsDigit(value[end])) end++;
-			if (end > i + 1 && end < value.Length && value[end] is '}' or ',' or ':')
-				highest = Math.Max(highest, int.Parse(value.Substring(i + 1, end - i - 1), CultureInfo.InvariantCulture));
-		}
-
-		return [.. Enumerable.Range(0, highest + 1).Select(index => $"arg{index}")];
+		return new GeneratedOutput(generatedFileName, sourceCode, Validator.ErrorsAndWarnings);
 	}
 }

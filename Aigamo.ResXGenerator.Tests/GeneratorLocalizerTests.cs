@@ -162,6 +162,22 @@ public class GeneratorLocalizerTests
 		result.SourceCode.ReplaceLineEndings().Should().Contain("string MultiGreeting(object arg0, object arg1);");
 	}
 
+	private static GeneratedOutput GenerateWithFormatMethods(string text) =>
+		new LocalizerGenerator().Generate(
+			options: new GenFileOptions
+			{
+				LocalNamespace = "VocaDb.Web.App_GlobalResources",
+				EmbeddedFilename = "VocaDb.Web.App_GlobalResources.CommonMessages",
+				GroupedFile = new GroupedAdditionalFile(
+					mainFile: new AdditionalTextWithHash(new AdditionalTextStub("", text), Guid.NewGuid()),
+					subFiles: []
+				),
+				GenerationType = GenerationType.StringLocalizer,
+				ClassName = "CommonMessages",
+				GenerateFormatMethods = true
+			}
+		);
+
 	[Fact]
 	public void Generate_Localizer_FormatItemsWithAlignmentOrFormat_GenerateMethodWithParameters_WhenEnabled()
 	{
@@ -204,21 +220,52 @@ public class GeneratorLocalizerTests
 		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Second(object arg0, object arg1) => stringLocalizer[\"Second\", arg0, arg1];");
 	}
 
-	private static GeneratedOutput GenerateWithFormatMethods(string text) =>
-		new LocalizerGenerator().Generate(
-			options: new GenFileOptions
-			{
-				LocalNamespace = "VocaDb.Web.App_GlobalResources",
-				EmbeddedFilename = "VocaDb.Web.App_GlobalResources.CommonMessages",
-				GroupedFile = new GroupedAdditionalFile(
-					mainFile: new AdditionalTextWithHash(new AdditionalTextStub("", text), Guid.NewGuid()),
-					subFiles: []
-				),
-				GenerationType = GenerationType.StringLocalizer,
-				ClassName = "CommonMessages",
-				GenerateFormatMethods = true
-			}
-		);
+	[Fact]
+	public void Generate_Localizer_FormatItemsWithSpacesAfterTheIndex_GenerateMethodWithParameters_WhenEnabled()
+	{
+		const string text =
+			"""
+			<?xml version="1.0" encoding="utf-8"?>
+			<root>
+				<data name="Spaced" xml:space="preserve">
+					<value>{0 } and {1 :g}</value>
+				</data>
+			</root>
+			""";
+
+		var result = GenerateWithFormatMethods(text);
+
+		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Spaced(object arg0, object arg1) => stringLocalizer[\"Spaced\", arg0, arg1];");
+	}
+
+	[Fact]
+	public void Generate_Localizer_FormatItemsWithAnIndexOutOfRange_GenerateProperty_WhenEnabled()
+	{
+		const string text =
+			"""
+			<?xml version="1.0" encoding="utf-8"?>
+			<root>
+				<data name="Overflow" xml:space="preserve">
+					<value>Overflow {99999999999}</value>
+				</data>
+				<data name="TooMany" xml:space="preserve">
+					<value>First {0}, too many {100}</value>
+				</data>
+				<data name="Highest" xml:space="preserve">
+					<value>Highest {99}</value>
+				</data>
+			</root>
+			""";
+
+		var result = GenerateWithFormatMethods(text);
+
+		result.ErrorsAndWarnings.Should().BeNullOrEmpty();
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Overflow => stringLocalizer[\"Overflow\"];");
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string TooMany => stringLocalizer[\"TooMany\"];");
+		result.SourceCode.ReplaceLineEndings().Should().Contain("public string Highest(object arg0, ");
+		result.SourceCode.ReplaceLineEndings().Should().Contain(", object arg99) => stringLocalizer[\"Highest\", arg0, ");
+	}
 
 	[Fact]
 	public void Generate_Localizer_NewLine()
